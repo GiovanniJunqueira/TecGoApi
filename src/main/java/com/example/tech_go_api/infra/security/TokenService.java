@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 @Service
@@ -46,16 +45,16 @@ public class TokenService {
         }
     }
 
-    public boolean validateToken(String token) {
+    public String validateToken(String token) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(SECRET);
             JWTVerifier verifier = JWT.require(algorithm)
                     .withIssuer("tech-go-api")
                     .build();
-            verifier.verify(token);
-            return true;
+            DecodedJWT jwt = verifier.verify(token);
+            return jwt.getSubject();
         } catch (JWTVerificationException exception) {
-            return false;
+            return null;
         }
     }
 
