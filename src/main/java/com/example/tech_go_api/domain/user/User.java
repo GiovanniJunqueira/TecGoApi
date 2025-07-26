@@ -13,11 +13,20 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
-    private String name;
+
     private String email;
     private String password;
+    private String phone;
+    private String firstname;
+    private String lastname;
+    private String document;
 
+    @Enumerated(EnumType.STRING)
+    private Role role;
 }
+
+
