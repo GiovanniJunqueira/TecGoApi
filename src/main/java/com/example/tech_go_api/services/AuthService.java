@@ -28,7 +28,6 @@ public class AuthService {
             String token = tokenService.generateToken(user);
             return ResponseEntity.ok(new ResponseDTO(token));
         }
-
         return ResponseEntity.badRequest().body("Invalid Credentials");
     }
 
@@ -49,6 +48,6 @@ public class AuthService {
         repository.save(newUser);
 
         String token = tokenService.generateToken(newUser);
-        return ResponseEntity.ok(new ResponseDTO(token));
+        return ResponseEntity.ok().build();
     }
 }
