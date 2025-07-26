@@ -9,7 +9,7 @@ public class TechGoApiApplication {
 
 	public static void main(String[] args) {
 		Dotenv dotenv = Dotenv.configure()
-				.directory("./")  // onde está o .env
+				.directory("./")
 				.ignoreIfMissing()
 				.load();
 		System.setProperty("DB_URL", dotenv.get("DB_URL"));
