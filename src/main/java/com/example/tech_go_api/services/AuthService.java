@@ -28,12 +28,12 @@ public class AuthService {
             String token = tokenService.generateToken(user);
             return ResponseEntity.ok(new ResponseDTO(token));
         }
-        return ResponseEntity.badRequest().body("Invalid Credentials");
+        return ResponseEntity.status(401).body("Invalid Credentials");
     }
 
     public ResponseEntity<?> register(RegisterRequestDTO body) {
         if (repository.findByEmail(body.email()).isPresent()) {
-            return ResponseEntity.badRequest().body("Email already Register.");
+            return ResponseEntity.status(409).body("Email already Register.");
         }
 
         User newUser = new User();

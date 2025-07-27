@@ -33,6 +33,7 @@ public class TokenService {
                     .withSubject(user.getId())
                     .withClaim("firstname", user.getFirstname())
                     .withClaim("lastname", user.getLastname())
+                    .withClaim("phone", user.getPhone())
                     .withClaim("document", user.getDocument())
                     .withClaim("email", user.getEmail())
                     .withClaim("role", user.getRole().toString())
