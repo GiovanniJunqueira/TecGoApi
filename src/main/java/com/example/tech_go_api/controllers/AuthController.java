@@ -1,7 +1,7 @@
 package com.example.tech_go_api.controllers;
 
 import com.example.tech_go_api.dto.LoginRequestDTO;
-import com.example.tech_go_api.dto.RegisterRequestDTO;
+import jakarta.validation.Valid;
 import com.example.tech_go_api.services.AuthService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -17,12 +17,10 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequestDTO body) {
+        public ResponseEntity<?> login(@RequestBody @Valid LoginRequestDTO body) {
         return authService.login(body);
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequestDTO body) {
-        return authService.register(body);
+
     }
-}
+

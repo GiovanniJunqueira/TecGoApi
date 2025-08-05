@@ -6,6 +6,8 @@ import com.example.tech_go_api.dto.LoginRequestDTO;
 import com.example.tech_go_api.dto.RegisterRequestDTO;
 import com.example.tech_go_api.dto.ResponseDTO;
 import com.example.tech_go_api.infra.security.TokenService;
+import com.example.tech_go_api.exceptions.BusinessException;
+import com.example.tech_go_api.exceptions.NotFoundException;
 import com.example.tech_go_api.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,34 +22,17 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
 
-    public ResponseEntity<?> login(LoginRequestDTO body) {
+        public ResponseEntity<?> login(LoginRequestDTO body) {
         User user = repository.findByEmail(body.email())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new NotFoundException("Usuário com o e-mail informado não foi encontrado"));
 
-        if (passwordEncoder.matches(body.password(), user.getPassword())) {
-            String token = tokenService.generateToken(user);
-            return ResponseEntity.ok(new ResponseDTO(token));
-        }
-        return ResponseEntity.status(401).body("Invalid Credentials");
-    }
-
-    public ResponseEntity<?> register(RegisterRequestDTO body) {
-        if (repository.findByEmail(body.email()).isPresent()) {
-            return ResponseEntity.status(409).body("Email already Register.");
+        if (!passwordEncoder.matches(body.password(), user.getPassword())) {
+            throw new BusinessException("Credenciais inválidas");
         }
 
-        User newUser = new User();
-        newUser.setEmail(body.email());
-        newUser.setPassword(passwordEncoder.encode(body.password()));
-        newUser.setPhone(body.phone());
-        newUser.setFirstname(body.firstname());
-        newUser.setLastname(body.lastname());
-        newUser.setDocument(body.document());
-        newUser.setRole(body.role());
-
-        repository.save(newUser);
-
-        String token = tokenService.generateToken(newUser);
-        return ResponseEntity.ok().build();
+        String token = tokenService.generateToken(user);
+        return ResponseEntity.ok(new ResponseDTO(token));
     }
+
+
 }

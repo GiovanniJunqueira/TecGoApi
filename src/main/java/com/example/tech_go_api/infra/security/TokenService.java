@@ -7,6 +7,8 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
 import com.example.tech_go_api.domain.user.User;
+import com.example.tech_go_api.exceptions.AuthException;
+import com.example.tech_go_api.exceptions.BusinessException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -31,18 +33,13 @@ public class TokenService {
             return JWT.create()
                     .withIssuer("tech-go-api")
                     .withSubject(user.getId())
-                    .withClaim("firstname", user.getFirstname())
-                    .withClaim("lastname", user.getLastname())
-                    .withClaim("phone", user.getPhone())
-                    .withClaim("document", user.getDocument())
-                    .withClaim("email", user.getEmail())
                     .withClaim("role", user.getRole().toString())
                     .withIssuedAt(Date.from(now))
-                    .withExpiresAt(this.generateExpirationDate())
+                    .withExpiresAt(expiration)
                     .sign(algorithm);
 
         } catch (JWTCreationException exception) {
-            throw new RuntimeException("Erro na autenticação", exception);
+                        throw new BusinessException("Erro na autenticação");
         }
     }
 
@@ -54,14 +51,14 @@ public class TokenService {
                     .build();
             DecodedJWT jwt = verifier.verify(token);
             return jwt.getSubject();
-        } catch (JWTVerificationException exception) {
-            return null;
+                } catch (JWTVerificationException exception) {
+            throw new AuthException("Token inválido ou expirado");
         }
     }
 
     private Instant generateExpirationDate() {
         return LocalDateTime.now()
-                .plusHours(2)
+                .plusMinutes(15)
                 .toInstant(ZoneOffset.of("-03:00"));
     }
 }
