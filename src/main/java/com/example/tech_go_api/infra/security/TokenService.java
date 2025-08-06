@@ -6,22 +6,37 @@ import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
+import com.example.tech_go_api.domain.token.RefreshToken;
 import com.example.tech_go_api.domain.user.User;
 import com.example.tech_go_api.exceptions.AuthException;
 import com.example.tech_go_api.exceptions.BusinessException;
+import com.example.tech_go_api.repositories.token.RefreshTokenRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Base64;
 import java.util.Date;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class TokenService {
 
-    @Value("${JWT_SECRET}")
+    @Value("${jwt.secret}")
     private String SECRET;
+
+    @Value("${jwt.refresh.token.duration.ms}")
+    private Long refreshTokenDurationMs;
+
+    private final RefreshTokenRepository refreshTokenRepository;
 
     public String generateToken(User user) {
         try {
@@ -60,5 +75,36 @@ public class TokenService {
         return LocalDateTime.now()
                 .plusMinutes(15)
                 .toInstant(ZoneOffset.of("-03:00"));
+    }
+
+    public Optional<RefreshToken> findByToken(String token) {
+        return refreshTokenRepository.findByToken(token);
+    }
+
+    public RefreshToken createRefreshToken(User user) {
+        refreshTokenRepository.findByToken(user.getId()).ifPresent(refreshTokenRepository::delete);
+
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setUser(user);
+        refreshToken.setExpiryDate(Instant.now().plusMillis(refreshTokenDurationMs));
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            String originalString = user.getId() + Instant.now().toString() + UUID.randomUUID().toString();
+            byte[] encodedhash = digest.digest(originalString.getBytes(StandardCharsets.UTF_8));
+            String sha256hex = Base64.getEncoder().encodeToString(encodedhash);
+            refreshToken.setToken(sha256hex);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Erro ao gerar o refresh token", e);
+        }
+
+        return refreshTokenRepository.save(refreshToken);
+    }
+
+    public RefreshToken verifyExpiration(RefreshToken token) {
+        if (token.getExpiryDate().compareTo(Instant.now()) < 0) {
+            refreshTokenRepository.delete(token);
+            throw new AuthException("Refresh token expirado. Por favor, faça login novamente.");
+        }
+        return token;
     }
 }

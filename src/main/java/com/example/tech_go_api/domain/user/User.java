@@ -1,6 +1,8 @@
 package com.example.tech_go_api.domain.user;
 
 import com.example.tech_go_api.domain.school.School;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,6 +20,7 @@ public class User {
     private String id;
 
     private String email;
+    @JsonIgnore
     private String password;
 
     @Enumerated(EnumType.STRING)
@@ -25,5 +28,6 @@ public class User {
 
     @ManyToOne
     @JoinColumn(name = "school_id", nullable = true)
+    @JsonBackReference
     private School school;
 }

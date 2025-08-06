@@ -1,6 +1,7 @@
 package com.example.tech_go_api.domain.school;
 
 import com.example.tech_go_api.domain.user.User;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,5 +25,6 @@ public class School {
     private String city;
 
     @OneToMany(mappedBy = "school")
+    @JsonManagedReference
     private List<User> users;
 }

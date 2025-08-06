@@ -1,4 +1,4 @@
-package com.example.tech_go_api.dto;
+package com.example.tech_go_api.dto.auth;
 
 
 import jakarta.validation.constraints.Email;
@@ -10,4 +10,5 @@ public record LoginRequestDTO (
         String email,
         @NotBlank(message = "Password is required")
         String password
-){}
+) {
+}
