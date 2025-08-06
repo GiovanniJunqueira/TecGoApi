@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "Admin Profile")
+@Tag(name = "Adiministrador da Escola")
 @RestController
 @RequestMapping("/admin")
 @RequiredArgsConstructor
