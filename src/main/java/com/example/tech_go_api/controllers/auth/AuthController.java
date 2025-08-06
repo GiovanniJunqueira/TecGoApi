@@ -1,4 +1,4 @@
-package com.example.tech_go_api.controllers;
+package com.example.tech_go_api.controllers.auth;
 
 import com.example.tech_go_api.dto.LoginRequestDTO;
 import jakarta.validation.Valid;

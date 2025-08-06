@@ -1,0 +1,26 @@
+package com.example.tech_go_api.domain.profileadmin;
+
+import com.example.tech_go_api.domain.user.User;
+import jakarta.persistence.Entity;
+import jakarta.persistence.PrimaryKeyJoinColumn;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Entity
+@Table(name = "t_profile_admin")
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
+@PrimaryKeyJoinColumn(name = "user_id")
+public class ProfileAdmin extends User {
+    private String phone;
+    private String firstname;
+    private String lastname;
+    private String document;
+}

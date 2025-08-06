@@ -33,7 +33,8 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/school").hasRole("MASTER")
+
+                        .requestMatchers(HttpMethod.POST, "/admin/**").hasRole("MASTER")
                         .requestMatchers("/player/**").hasRole("ADMIN")
 
                         .requestMatchers(
