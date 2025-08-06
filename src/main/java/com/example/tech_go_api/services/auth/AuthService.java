@@ -38,8 +38,14 @@ public class AuthService {
 
         String accessToken = tokenService.generateToken(user);
         RefreshToken refreshToken = tokenService.createRefreshToken(user);
-
-        return ResponseEntity.ok(new LoginResponseDTO(accessToken, refreshToken.getToken()));
+        long expiresIn = tokenService.getTokenExpirationTime();
+        
+        LoginResponseDTO response = new LoginResponseDTO();
+        response.setAccessToken(accessToken);
+        response.setRefreshToken(refreshToken.getToken());
+        response.setExpiresIn(expiresIn);
+        
+        return ResponseEntity.ok(response);
     }
 
     public ResponseEntity<TokenRefreshResponseDTO> refreshToken(TokenRefreshRequestDTO request) {
@@ -50,7 +56,11 @@ public class AuthService {
                 .map(RefreshToken::getUser)
                 .map(user -> {
                     String newAccessToken = tokenService.generateToken(user);
-                    return ResponseEntity.ok(new TokenRefreshResponseDTO(newAccessToken, requestRefreshToken));
+                    long expiresIn = tokenService.getTokenExpirationTime();
+                    TokenRefreshResponseDTO response = new TokenRefreshResponseDTO();
+                    response.setAccessToken(newAccessToken);
+                    response.setExpiresIn(expiresIn);
+                    return ResponseEntity.ok(response);
                 })
                 .orElseThrow(() -> new AuthException("Refresh token não encontrado!"));
     }
@@ -63,7 +73,6 @@ public class AuthService {
                     .orElseThrow(() -> new NotFoundException("Perfil de administrador não encontrado para o usuário: " + user.getId()));
         }
 
-        
         return user;
     }
 

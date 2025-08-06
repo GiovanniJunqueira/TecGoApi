@@ -33,8 +33,14 @@ public class TokenService {
     @Value("${jwt.secret}")
     private String SECRET;
 
-    @Value("${jwt.refresh.token.duration.ms}")
-    private Long refreshTokenDurationMs;
+    @Value("${jwt.access.token.duration.minutes}")
+    private int accessTokenDurationMinutes;
+    
+    @Value("${jwt.refresh.token.duration.days}")
+    private int refreshTokenDurationDays;
+    
+    private static final long MILLIS_IN_DAY = 24 * 60 * 60 * 1000L;
+    private static final long SECONDS_IN_MINUTE = 60L;
 
     private final RefreshTokenRepository refreshTokenRepository;
 
@@ -73,8 +79,19 @@ public class TokenService {
 
     private Instant generateExpirationDate() {
         return LocalDateTime.now()
-                .plusMinutes(15)
+                .plusMinutes(accessTokenDurationMinutes)
                 .toInstant(ZoneOffset.of("-03:00"));
+    }
+    
+    
+   
+    public long getTokenExpirationTime() {
+        return accessTokenDurationMinutes * SECONDS_IN_MINUTE;
+    }
+    
+   
+    private long getRefreshTokenDurationMs() {
+        return refreshTokenDurationDays * MILLIS_IN_DAY;
     }
 
     public Optional<RefreshToken> findByToken(String token) {
@@ -89,7 +106,7 @@ public class TokenService {
                     return newToken;
                 });
 
-        refreshToken.setExpiryDate(Instant.now().plusMillis(refreshTokenDurationMs));
+        refreshToken.setExpiryDate(Instant.now().plusMillis(getRefreshTokenDurationMs()));
 
         refreshToken.setToken(UUID.randomUUID().toString());
 
