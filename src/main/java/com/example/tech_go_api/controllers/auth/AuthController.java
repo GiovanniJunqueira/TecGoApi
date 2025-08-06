@@ -36,7 +36,6 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    @SecurityRequirement(name = "bearer-key")
     public ResponseEntity<?> me() {
         return ResponseEntity.ok(authService.me());
     }

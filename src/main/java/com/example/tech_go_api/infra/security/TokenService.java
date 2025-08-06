@@ -82,20 +82,16 @@ public class TokenService {
     }
 
     public RefreshToken createRefreshToken(User user) {
-        refreshTokenRepository.findByToken(user.getId()).ifPresent(refreshTokenRepository::delete);
+        RefreshToken refreshToken = refreshTokenRepository.findByUser(user)
+                .orElseGet(() -> {
+                    RefreshToken newToken = new RefreshToken();
+                    newToken.setUser(user);
+                    return newToken;
+                });
 
-        RefreshToken refreshToken = new RefreshToken();
-        refreshToken.setUser(user);
         refreshToken.setExpiryDate(Instant.now().plusMillis(refreshTokenDurationMs));
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            String originalString = user.getId() + Instant.now().toString() + UUID.randomUUID().toString();
-            byte[] encodedhash = digest.digest(originalString.getBytes(StandardCharsets.UTF_8));
-            String sha256hex = Base64.getEncoder().encodeToString(encodedhash);
-            refreshToken.setToken(sha256hex);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Erro ao gerar o refresh token", e);
-        }
+
+        refreshToken.setToken(UUID.randomUUID().toString());
 
         return refreshTokenRepository.save(refreshToken);
     }

@@ -1,6 +1,7 @@
 package com.example.tech_go_api.repositories.token;
 
 import com.example.tech_go_api.domain.token.RefreshToken;
+import com.example.tech_go_api.domain.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -10,6 +11,7 @@ import java.util.Optional;
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, String> {
 
     Optional<RefreshToken> findByToken(String token);
+    Optional<RefreshToken> findByUser(User user);
 
-    void deleteByUser(com.example.tech_go_api.domain.user.User user);
+    void deleteByUser(User user);
 }
