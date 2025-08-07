@@ -1,17 +1,18 @@
 package com.example.tech_go_api.domain.user;
 
+import com.example.tech_go_api.domain.school.School;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
-@Table(name = "users")
+@Table(name = "t_user")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Inheritance(strategy = InheritanceType.JOINED)
 public class User {
 
     @Id
@@ -19,14 +20,14 @@ public class User {
     private String id;
 
     private String email;
+    @JsonIgnore
     private String password;
-    private String phone;
-    private String firstname;
-    private String lastname;
-    private String document;
 
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @ManyToOne
+    @JoinColumn(name = "school_id", nullable = true)
+    @JsonBackReference
+    private School school;
 }
-
-

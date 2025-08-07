@@ -32,9 +32,19 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/register").hasRole("MASTER")
+                        .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
+
+                        .requestMatchers(HttpMethod.POST, "/admin/**").hasRole("MASTER")
                         .requestMatchers("/player/**").hasRole("ADMIN")
+
+                        .requestMatchers(
+                                "/",
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/swagger-resources/**",
+                        "/webjars/**").permitAll()
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);
