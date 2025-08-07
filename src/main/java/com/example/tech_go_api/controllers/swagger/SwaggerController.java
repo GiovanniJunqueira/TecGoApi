@@ -1,4 +1,4 @@
-package com.example.tech_go_api.infra.config;
+package com.example.tech_go_api.controllers.swagger;
 
 
 import org.springframework.stereotype.Controller;

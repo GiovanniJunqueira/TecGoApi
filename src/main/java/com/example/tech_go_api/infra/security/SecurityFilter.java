@@ -1,6 +1,7 @@
 package com.example.tech_go_api.infra.security;
 
 import com.example.tech_go_api.domain.user.User;
+import com.example.tech_go_api.exceptions.BusinessException;
 import com.example.tech_go_api.repositories.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -31,7 +32,7 @@ public class SecurityFilter extends OncePerRequestFilter {
 
             if (userId != null) {
                 User user = userRepository.findById(userId)
-                        .orElseThrow(() -> new RuntimeException("User Not Found"));
+                        .orElseThrow(() -> new BusinessException("Usuário não encontrado"));
 
                 var authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().toString()));
                 var authentication = new UsernamePasswordAuthenticationToken(user, null, authorities);

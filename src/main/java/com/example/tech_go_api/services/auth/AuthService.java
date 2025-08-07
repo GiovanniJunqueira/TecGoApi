@@ -1,0 +1,80 @@
+package com.example.tech_go_api.services.auth;
+
+import com.example.tech_go_api.domain.token.RefreshToken;
+import com.example.tech_go_api.domain.user.Role;
+import com.example.tech_go_api.domain.user.User;
+import com.example.tech_go_api.dto.auth.LoginRequestDTO;
+import com.example.tech_go_api.dto.auth.LoginResponseDTO;
+import com.example.tech_go_api.dto.auth.TokenRefreshRequestDTO;
+import com.example.tech_go_api.dto.auth.TokenRefreshResponseDTO;
+import com.example.tech_go_api.exceptions.AuthException;
+import com.example.tech_go_api.exceptions.BusinessException;
+import com.example.tech_go_api.exceptions.NotFoundException;
+import com.example.tech_go_api.infra.security.TokenService;
+import com.example.tech_go_api.repositories.UserRepository;
+import com.example.tech_go_api.repositories.profileadmin.ProfileAdminRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class AuthService {
+
+    private final UserRepository repository;
+    private final ProfileAdminRepository profileAdminRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final TokenService tokenService;
+
+    public ResponseEntity<LoginResponseDTO> login(LoginRequestDTO body) {
+        User user = repository.findByEmail(body.email())
+                .orElseThrow(() -> new NotFoundException("Usuário com o e-mail informado não foi encontrado"));
+
+        if (!passwordEncoder.matches(body.password(), user.getPassword())) {
+            throw new BusinessException("Credenciais inválidas");
+        }
+
+        String accessToken = tokenService.generateToken(user);
+        RefreshToken refreshToken = tokenService.createRefreshToken(user);
+        long expiresIn = tokenService.getTokenExpirationTime();
+        
+        LoginResponseDTO response = new LoginResponseDTO();
+        response.setAccessToken(accessToken);
+        response.setRefreshToken(refreshToken.getToken());
+        response.setExpiresIn(expiresIn);
+        
+        return ResponseEntity.ok(response);
+    }
+
+    public ResponseEntity<TokenRefreshResponseDTO> refreshToken(TokenRefreshRequestDTO request) {
+        String requestRefreshToken = request.getRefreshToken();
+
+        return tokenService.findByToken(requestRefreshToken)
+                .map(tokenService::verifyExpiration)
+                .map(RefreshToken::getUser)
+                .map(user -> {
+                    String newAccessToken = tokenService.generateToken(user);
+                    long expiresIn = tokenService.getTokenExpirationTime();
+                    TokenRefreshResponseDTO response = new TokenRefreshResponseDTO();
+                    response.setAccessToken(newAccessToken);
+                    response.setExpiresIn(expiresIn);
+                    return ResponseEntity.ok(response);
+                })
+                .orElseThrow(() -> new AuthException("Refresh token não encontrado!"));
+    }
+
+    public Object me() {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (user.getRole() == Role.ADMIN) {
+            return profileAdminRepository.findById(user.getId())
+                    .orElseThrow(() -> new NotFoundException("Perfil de administrador não encontrado para o usuário: " + user.getId()));
+        }
+
+        return user;
+    }
+
+
+}
