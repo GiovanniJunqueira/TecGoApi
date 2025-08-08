@@ -10,7 +10,7 @@ import com.example.tech_go_api.exceptions.AuthException;
 import com.example.tech_go_api.exceptions.BusinessException;
 import com.example.tech_go_api.exceptions.NotFoundException;
 import com.example.tech_go_api.infra.security.TokenService;
-import com.example.tech_go_api.repositories.UserRepository;
+import com.example.tech_go_api.repositories.user.UserRepository;
 import com.example.tech_go_api.cache.auth.AuthCacheService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

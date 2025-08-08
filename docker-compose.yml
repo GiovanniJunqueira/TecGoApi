@@ -9,7 +9,7 @@ services:
     environment:
       POSTGRES_DB: Tech_go_db
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 123456789~
+      POSTGRES_PASSWORD: 123456789
 
   redis:
     image: redis:latest

@@ -1,7 +1,8 @@
 package com.example.tech_go_api.infra.security;
 
 import com.example.tech_go_api.domain.user.User;
-import com.example.tech_go_api.repositories.UserRepository;
+import com.example.tech_go_api.repositories.user.UserRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

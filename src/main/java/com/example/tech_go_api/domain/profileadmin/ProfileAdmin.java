@@ -1,7 +1,12 @@
 package com.example.tech_go_api.domain.profileadmin;
 
+import com.example.tech_go_api.domain.school.School;
 import com.example.tech_go_api.domain.user.User;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -23,4 +28,9 @@ public class ProfileAdmin extends User {
     private String firstname;
     private String lastname;
     private String document;
+
+    @ManyToOne
+    @JoinColumn(name = "school_id", nullable = true)
+    @JsonBackReference
+    private School school;
 }

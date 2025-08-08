@@ -3,8 +3,9 @@ package com.example.tech_go_api.cache.auth;
 import com.example.tech_go_api.domain.user.Role;
 import com.example.tech_go_api.domain.user.User;
 import com.example.tech_go_api.exceptions.NotFoundException;
-import com.example.tech_go_api.repositories.UserRepository;
 import com.example.tech_go_api.repositories.profileadmin.ProfileAdminRepository;
+import com.example.tech_go_api.repositories.user.UserRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheConfig;

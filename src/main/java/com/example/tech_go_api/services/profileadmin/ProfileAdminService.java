@@ -8,9 +8,10 @@ import com.example.tech_go_api.dto.profileadmin.ProfileAdminResponseDTO;
 import com.example.tech_go_api.exceptions.ConflictException;
 import com.example.tech_go_api.exceptions.NotFoundException;
 import com.example.tech_go_api.mappers.profileadmin.ProfileAdminMapper;
-import com.example.tech_go_api.repositories.UserRepository;
 import com.example.tech_go_api.repositories.profileadmin.ProfileAdminRepository;
 import com.example.tech_go_api.repositories.school.SchoolRepository;
+import com.example.tech_go_api.repositories.user.UserRepository;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

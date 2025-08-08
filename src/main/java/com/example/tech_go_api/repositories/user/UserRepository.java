@@ -1,4 +1,4 @@
-package com.example.tech_go_api.repositories;
+package com.example.tech_go_api.repositories.user;
 
 import com.example.tech_go_api.domain.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;

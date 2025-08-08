@@ -10,6 +10,6 @@ public record ProfileAdminCreateRequestDTO(
         @NotBlank String firstname,
         @NotBlank String lastname,
         @NotBlank String document,
-        String schoolId
+        @NotBlank String schoolId
 ) {
 }

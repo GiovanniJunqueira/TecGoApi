@@ -2,7 +2,8 @@ package com.example.tech_go_api.infra.security;
 
 import com.example.tech_go_api.domain.user.User;
 import com.example.tech_go_api.exceptions.BusinessException;
-import com.example.tech_go_api.repositories.UserRepository;
+import com.example.tech_go_api.repositories.user.UserRepository;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

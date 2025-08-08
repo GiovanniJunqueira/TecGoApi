@@ -1,10 +1,11 @@
 package com.example.tech_go_api.domain.school;
 
-import com.example.tech_go_api.domain.user.User;
+import com.example.tech_go_api.domain.profileadmin.ProfileAdmin;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
 import java.util.List;
 
 @Entity
@@ -13,8 +14,10 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class School {
+public class School implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+    
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
@@ -26,5 +29,6 @@ public class School {
 
     @OneToMany(mappedBy = "school")
     @JsonManagedReference
-    private List<User> users;
+    private List<ProfileAdmin> profileAdmins;
+
 }

@@ -10,6 +10,6 @@ public interface SchoolMapper {
     SchoolCreateDTO toDto(School entity);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "users", ignore = true)
+    @Mapping(target = "profileAdmins", ignore = true)
     School toEntity(SchoolCreateDTO dto);
 }
