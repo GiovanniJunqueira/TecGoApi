@@ -10,3 +10,10 @@ services:
       POSTGRES_DB: Tech_go_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 123456789
+
+  redis:
+    image: redis:latest
+    container_name: Tech_go_api_redis
+    ports:
+      - '6379:6379'
+    restart: always

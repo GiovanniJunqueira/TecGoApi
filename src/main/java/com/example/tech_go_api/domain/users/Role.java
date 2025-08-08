@@ -1,4 +1,4 @@
-package com.example.tech_go_api.domain.user;
+package com.example.tech_go_api.domain.users;
 
 public enum Role {
     MASTER,   // Devs - acesso por Postman

@@ -1,7 +1,8 @@
 package com.example.tech_go_api.repositories.token;
 
 import com.example.tech_go_api.domain.token.RefreshToken;
-import com.example.tech_go_api.domain.user.User;
+import com.example.tech_go_api.domain.users.base.User;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -4,8 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import io.github.cdimascio.dotenv.Dotenv;
+import org.springframework.cache.annotation.EnableCaching;
 
 @SpringBootApplication
+@EnableCaching
 public class TechGoApiApplication {
 
 	public static void main(String[] args) {
@@ -19,6 +21,11 @@ public class TechGoApiApplication {
 		System.setProperty("JWT_SECRET", dotenv.get("JWT_SECRET"));
 		System.setProperty("JWT_ACCESS_TOKEN_DURATION_MINUTES", dotenv.get("JWT_ACCESS_TOKEN_DURATION_MINUTES"));
 		System.setProperty("JWT_REFRESH_TOKEN_DURATION_DAYS", dotenv.get("JWT_REFRESH_TOKEN_DURATION_DAYS"));
+
+		// Redis
+		System.setProperty("REDIS_HOST", dotenv.get("REDIS_HOST"));
+		System.setProperty("REDIS_PORT", dotenv.get("REDIS_PORT"));
+
 
 		SpringApplication.run(TechGoApiApplication.class, args);
 	}

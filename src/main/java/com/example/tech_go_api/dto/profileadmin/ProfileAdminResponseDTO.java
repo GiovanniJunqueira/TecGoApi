@@ -1,6 +1,6 @@
 package com.example.tech_go_api.dto.profileadmin;
 
-import com.example.tech_go_api.domain.user.Role;
+import com.example.tech_go_api.domain.users.Role;
 
 public record ProfileAdminResponseDTO(
         String id,
