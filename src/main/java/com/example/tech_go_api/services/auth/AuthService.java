@@ -1,7 +1,6 @@
 package com.example.tech_go_api.services.auth;
 
 import com.example.tech_go_api.domain.token.RefreshToken;
-import com.example.tech_go_api.domain.user.Role;
 import com.example.tech_go_api.domain.user.User;
 import com.example.tech_go_api.dto.auth.LoginRequestDTO;
 import com.example.tech_go_api.dto.auth.LoginResponseDTO;
@@ -12,7 +11,7 @@ import com.example.tech_go_api.exceptions.BusinessException;
 import com.example.tech_go_api.exceptions.NotFoundException;
 import com.example.tech_go_api.infra.security.TokenService;
 import com.example.tech_go_api.repositories.UserRepository;
-import com.example.tech_go_api.repositories.profileadmin.ProfileAdminRepository;
+import com.example.tech_go_api.cache.auth.AuthCacheService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,9 +23,9 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
     private final UserRepository repository;
-    private final ProfileAdminRepository profileAdminRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
+    private final AuthCacheService authCacheService;
 
     public ResponseEntity<LoginResponseDTO> login(LoginRequestDTO body) {
         User user = repository.findByEmail(body.email())
@@ -65,16 +64,9 @@ public class AuthService {
                 .orElseThrow(() -> new AuthException("Refresh token não encontrado!"));
     }
 
-    public Object me() {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        if (user.getRole() == Role.ADMIN) {
-            return profileAdminRepository.findById(user.getId())
-                    .orElseThrow(() -> new NotFoundException("Perfil de administrador não encontrado para o usuário: " + user.getId()));
-        }
-
-        return user;
+    public Object me(String userId) {
+        return authCacheService.getMe(userId);
     }
-
 
 }
