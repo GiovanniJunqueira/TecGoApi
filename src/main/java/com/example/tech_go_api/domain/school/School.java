@@ -1,6 +1,6 @@
 package com.example.tech_go_api.domain.school;
 
-import com.example.tech_go_api.domain.profileadmin.ProfileAdmin;
+import com.example.tech_go_api.domain.users.profileadmin.ProfileAdmin;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;

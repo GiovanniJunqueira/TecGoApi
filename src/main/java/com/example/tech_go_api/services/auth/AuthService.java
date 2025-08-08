@@ -1,7 +1,7 @@
 package com.example.tech_go_api.services.auth;
 
 import com.example.tech_go_api.domain.token.RefreshToken;
-import com.example.tech_go_api.domain.user.User;
+import com.example.tech_go_api.domain.users.base.User;
 import com.example.tech_go_api.dto.auth.LoginRequestDTO;
 import com.example.tech_go_api.dto.auth.LoginResponseDTO;
 import com.example.tech_go_api.dto.auth.TokenRefreshRequestDTO;

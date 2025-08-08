@@ -1,7 +1,8 @@
-package com.example.tech_go_api.domain.user;
+package com.example.tech_go_api.domain.users.base;
 
 import java.io.Serializable;
 
+import com.example.tech_go_api.domain.users.Role;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Entity;

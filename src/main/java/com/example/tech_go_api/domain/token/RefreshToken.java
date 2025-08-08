@@ -1,6 +1,5 @@
 package com.example.tech_go_api.domain.token;
 
-import com.example.tech_go_api.domain.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,6 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.Instant;
+
+import com.example.tech_go_api.domain.users.base.User;
 
 @Entity
 @Table(name = "t_refresh_token")
