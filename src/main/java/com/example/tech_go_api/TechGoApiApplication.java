@@ -26,6 +26,12 @@ public class TechGoApiApplication {
 		System.setProperty("REDIS_HOST", dotenv.get("REDIS_HOST"));
 		System.setProperty("REDIS_PORT", dotenv.get("REDIS_PORT"));
 
+		// MinIO
+		System.setProperty("MINIO_URL", dotenv.get("MINIO_URL"));
+		System.setProperty("MINIO_ACCESS_KEY", dotenv.get("MINIO_ACCESS_KEY"));
+		System.setProperty("MINIO_SECRET_KEY", dotenv.get("MINIO_SECRET_KEY"));
+		System.setProperty("MINIO_BUCKET", dotenv.get("MINIO_BUCKET"));
+
 
 		SpringApplication.run(TechGoApiApplication.class, args);
 	}
