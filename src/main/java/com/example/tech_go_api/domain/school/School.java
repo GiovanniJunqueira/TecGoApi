@@ -1,12 +1,20 @@
 package com.example.tech_go_api.domain.school;
 
+import java.util.List;
+
 import com.example.tech_go_api.domain.users.profileadmin.ProfileAdmin;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import jakarta.persistence.*;
-import lombok.*;
 
-import java.io.Serializable;
-import java.util.List;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "t_school")
@@ -14,9 +22,8 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class School implements Serializable {
+public class School {
 
-    private static final long serialVersionUID = 1L;
     
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -30,5 +37,7 @@ public class School implements Serializable {
     @OneToMany(mappedBy = "school")
     @JsonManagedReference
     private List<ProfileAdmin> profileAdmins;
+
+    private String logoReferenceId;
 
 }
