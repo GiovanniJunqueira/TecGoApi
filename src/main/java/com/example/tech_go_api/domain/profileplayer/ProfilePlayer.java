@@ -1,5 +1,7 @@
 package com.example.tech_go_api.domain.profileplayer;
 
+import java.time.LocalDate;
+
 import com.example.tech_go_api.domain.school.School;
 import com.example.tech_go_api.domain.users.base.User;
 import com.example.tech_go_api.domain.users.profileadmin.ProfileAdmin;
@@ -28,7 +30,26 @@ public class ProfilePlayer extends User {
 	
 	private String firstname;
 	private String lastname;
-	
+	private LocalDate birthDate; 
+	private String rg;
+	private String cpf;
+	private String phoneNumber;
+	private String address;
+	private String addressNumber;
+	private String addressNeighborhood;
+	private String addressComplement;
+	private String postcode;
+	private String college;
+	private String collegeAddress;
+	private String collegeNeighborhood;
+	private String collegeComplement;
+	private String collegePostcode;
+	private String collegePhone;
+	private String collegeSeries;
+	private String collegeTime;
+	private String origin;
+	private String registrationId;
+
 	@ManyToOne
     @JoinColumn(name = "school_id", nullable = true)
     @JsonBackReference
