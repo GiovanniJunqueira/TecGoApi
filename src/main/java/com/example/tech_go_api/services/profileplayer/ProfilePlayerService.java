@@ -4,6 +4,11 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 
 import com.example.tech_go_api.domain.profileplayer.ProfilePlayer;
 import com.example.tech_go_api.domain.school.School;
@@ -50,22 +55,22 @@ public class ProfilePlayerService {
 	        return ResponseEntity.ok("Usuario criado com sucesso");
 	    }
 	 
-	 
-	 public List<ProfilePlayer> findAllBySchoolAndIsDeletFalse(User user){
+	 @Cacheable(cacheNames = "getAllPlayers", key = "#schoolId")
+	 public Page<ProfilePlayer> findAllBySchoolAndIsDeletFalse(User user, Pageable pageable){
 		 ProfileAdmin profileAdmin = profileAdminRepository.findById(user.getId())
 		 			.orElseThrow(()-> new NotFoundException("Usuário Admin não encontrado"));
 		 	
 		 School school = profileAdmin.getSchool();	 	
-		 return profilePlayerRepository.findAllBySchoolAndIsDeletedFalse(school);
+		 return profilePlayerRepository.findAllBySchoolAndIsDeletedFalse(school, pageable);
 	 }
  
 	 
-	 public ResponseEntity<String> softDeleteProfilePlayer(ProfilePlayerSoftDeleteRequestDTO dto, User user){
+	 public ResponseEntity<String> softDeleteProfilePlayer(String id, User user){
 		 ProfileAdmin profileAdmin = profileAdminRepository.findById(user.getId())
 		 			.orElseThrow(()-> new NotFoundException("Usuário Admin não encontrado"));
 		 School school = profileAdmin.getSchool();
 		 
-		 ProfilePlayer profilePlayer = profilePlayerRepository.findById(dto.id())
+		 ProfilePlayer profilePlayer = profilePlayerRepository.findById(id)
 		            .orElseThrow(() -> new NotFoundException("Aluno não encontrado"));
 		 
 		 if (!profilePlayer.getSchool().getId().equals(school.getId())) {
