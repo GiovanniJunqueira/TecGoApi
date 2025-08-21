@@ -55,4 +55,11 @@ public class ProfilePlayerController {
 		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal(); 
         return profilePlayerService.softDeleteProfilePlayer(id, user);
     }
+	
+	@GetMapping (path = "/findById/{id}")
+	public ProfilePlayer findById(@PathVariable String id) {
+		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		
+		return profilePlayerService.getById(id, user);
+    }
 }

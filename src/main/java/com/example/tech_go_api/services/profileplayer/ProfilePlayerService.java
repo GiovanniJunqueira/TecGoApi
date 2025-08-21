@@ -1,6 +1,7 @@
 package com.example.tech_go_api.services.profileplayer;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -80,6 +81,21 @@ public class ProfilePlayerService {
 		 profilePlayer.setIsDeleted(true);
 		 profilePlayerRepository.save(profilePlayer);	 
 		 return ResponseEntity.ok("Usuario deletado com sucesso");
+	 }
+	 
+	 public ProfilePlayer getById(String id, User user){
+		 ProfileAdmin profileAdmin = profileAdminRepository.findById(user.getId())
+		 			.orElseThrow(()-> new NotFoundException("Usuário Admin não encontrado"));
+		 School school = profileAdmin.getSchool();
+		 
+		 ProfilePlayer profilePlayer = profilePlayerRepository.findById(id)
+		            .orElseThrow(() -> new NotFoundException("Aluno não encontrado"));
+		 
+		 if (!profilePlayer.getSchool().getId().equals(school.getId())) {
+		        throw new IllegalArgumentException("Este aluno não pertence à sua escola.");
+		    }
+		 	 
+		 return profilePlayer;
 	 }
 	 
 }
