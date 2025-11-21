@@ -50,6 +50,28 @@ public class ProfilePlayerService {
 	        profilePlayer.setFirstname(dto.firstname());
 	        profilePlayer.setLastname(dto.lastname());
 	        profilePlayer.setSchool(school);
+	     
+	        profilePlayer.setBirthDate(dto.birthDate());
+	        profilePlayer.setRg(dto.rg());
+	        profilePlayer.setCpf(dto.cpf());
+	        profilePlayer.setPhoneNumber(dto.phoneNumber());
+	        profilePlayer.setAddress(dto.address());
+	        profilePlayer.setAddressNumber(dto.addressNumber());
+	        profilePlayer.setAddressNeighborhood(dto.addressNeighborhood());
+	        profilePlayer.setAddressComplement(dto.addressComplement());
+	        profilePlayer.setPostcode(dto.postcode());
+	        profilePlayer.setCollege(dto.college());
+	        profilePlayer.setCollegeAddress(dto.collegeAddress());
+	        profilePlayer.setCollegeNeighborhood(dto.collegeNeighborhood());
+	        profilePlayer.setCollegeComplement(dto.collegeComplement());
+	        profilePlayer.setCollegePostcode(dto.collegePostcode());
+	        profilePlayer.setCollegePhone(dto.collegePhone());
+	        profilePlayer.setCollegeSeries(dto.collegeSeries());
+	        profilePlayer.setCollegeTime(dto.collegeTime());
+	        profilePlayer.setOrigin(dto.origin());
+	        profilePlayer.setRegistrationId(dto.registrationId());
+
+	        
 	        profilePlayer.setIsDeleted(false);
 
 	        ProfilePlayer saved = profilePlayerRepository.save(profilePlayer);
