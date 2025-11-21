@@ -2,6 +2,8 @@ package com.example.tech_go_api.domain.users.base;
 
 import java.io.Serializable;
 
+import org.hibernate.annotations.SQLDelete;
+
 import com.example.tech_go_api.domain.users.Role;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -40,6 +42,7 @@ public class User implements Serializable {
 
     @Enumerated(EnumType.STRING)
     private Role role;
-
+    
+    private Boolean isDeleted;
     
 }
