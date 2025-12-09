@@ -4,6 +4,11 @@ import java.time.LocalDate;
 
 import com.example.tech_go_api.domain.payment.Payment;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class PaymentResponse {
     private String id;
     private boolean status;
@@ -22,6 +27,4 @@ public class PaymentResponse {
             this.playerName = payment.getProfilePlayer().getFirstname();
         }
     }
-
-    // getters e setters
 }
