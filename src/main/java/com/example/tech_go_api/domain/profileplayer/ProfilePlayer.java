@@ -49,6 +49,7 @@ public class ProfilePlayer extends User {
 	private String collegeTime;
 	private String origin;
 	private String registrationId;
+	private int paymentDay;
 
 	@ManyToOne
     @JoinColumn(name = "school_id", nullable = true)

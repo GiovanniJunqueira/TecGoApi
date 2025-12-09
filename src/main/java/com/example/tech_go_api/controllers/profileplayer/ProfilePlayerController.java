@@ -38,13 +38,13 @@ public class ProfilePlayerController {
 	private final ProfilePlayerService profilePlayerService;
 	
 	@PostMapping(path = "/createPlayer")
-    public ResponseEntity<String> createProfilePlayer(@RequestBody @Valid ProfilePlayerCreateRequestDTO dto) {
+    public String createProfilePlayer(@RequestBody @Valid ProfilePlayerCreateRequestDTO dto) {
 		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		return profilePlayerService.createProfilePlayer(dto, user);		
     }
 	
 	@GetMapping (path = "/findAll")
-	 public ResponseEntity<Page<ProfilePlayer>> findAllBySchool(@PageableDefault(size = 10, sort = "name", direction = Sort.Direction.ASC) Pageable pageable) {
+	 public ResponseEntity<Page<ProfilePlayer>> findAllBySchool(@PageableDefault(size = 10, sort = "firstname", direction = Sort.Direction.ASC) Pageable pageable) {
 		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		Page<ProfilePlayer> players = profilePlayerService.findAllBySchoolAndIsDeletFalse(user, pageable);
 		return ResponseEntity.ok(players);		
