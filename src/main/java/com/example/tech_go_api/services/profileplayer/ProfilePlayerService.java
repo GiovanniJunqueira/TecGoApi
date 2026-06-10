@@ -1,10 +1,12 @@
 package com.example.tech_go_api.services.profileplayer;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +24,7 @@ import com.example.tech_go_api.exceptions.NotFoundException;
 import com.example.tech_go_api.repositories.profileadmin.ProfileAdminRepository;
 import com.example.tech_go_api.repositories.profileplayer.ProfilePlayerRepository;
 import com.example.tech_go_api.repositories.school.SchoolRepository;
+import com.example.tech_go_api.services.payment.PaymentService;
 
 
 import lombok.RequiredArgsConstructor;
@@ -35,8 +38,11 @@ public class ProfilePlayerService {
 	private final ProfilePlayerRepository profilePlayerRepository;
 	private final ProfileAdminRepository profileAdminRepository;
 	private final SchoolRepository schoolRepository;
+	
+	@Autowired
+	PaymentService paymentService;
 
-	 public ResponseEntity<String> createProfilePlayer(ProfilePlayerCreateRequestDTO dto, User user) {
+	 public String createProfilePlayer(ProfilePlayerCreateRequestDTO dto, User user) {
 		 
 		 	ProfileAdmin profileAdmin = profileAdminRepository.findById(user.getId())
 		 			.orElseThrow(()-> new NotFoundException("Usuário Admin não encontrado"));
@@ -44,13 +50,10 @@ public class ProfilePlayerService {
 		 	School school = profileAdmin.getSchool();
 	         
 	        ProfilePlayer profilePlayer = new ProfilePlayer();
-	        profilePlayer.setEmail(null);
-	        profilePlayer.setPassword(null);
 	        profilePlayer.setRole(Role.PLAYER);
 	        profilePlayer.setFirstname(dto.firstname());
 	        profilePlayer.setLastname(dto.lastname());
 	        profilePlayer.setSchool(school);
-	     
 	        profilePlayer.setBirthDate(dto.birthDate());
 	        profilePlayer.setRg(dto.rg());
 	        profilePlayer.setCpf(dto.cpf());
@@ -70,15 +73,17 @@ public class ProfilePlayerService {
 	        profilePlayer.setCollegeTime(dto.collegeTime());
 	        profilePlayer.setOrigin(dto.origin());
 	        profilePlayer.setRegistrationId(dto.registrationId());
-
-	        
 	        profilePlayer.setIsDeleted(false);
 
 	        ProfilePlayer saved = profilePlayerRepository.save(profilePlayer);
-	        return ResponseEntity.ok("Usuario criado com sucesso");
+	        
+	        String currentMonth = LocalDate.now().getYear() + "-" + LocalDate.now().getMonthValue();
+	        paymentService.createPayment(saved, currentMonth);
+	        
+	        return (saved.getId());
 	    }
 	 
-	 @Cacheable(cacheNames = "getAllPlayers", key = "#schoolId")
+//	 @Cacheable(cacheNames = "getAllPlayers", key = "#schoolId")
 	 public Page<ProfilePlayer> findAllBySchoolAndIsDeletFalse(User user, Pageable pageable){
 		 ProfileAdmin profileAdmin = profileAdminRepository.findById(user.getId())
 		 			.orElseThrow(()-> new NotFoundException("Usuário Admin não encontrado"));
@@ -118,6 +123,43 @@ public class ProfilePlayerService {
 		    }
 		 	 
 		 return profilePlayer;
+	 }
+	 
+	 public ProfilePlayer updateProfilePlayer(String id, ProfilePlayerCreateRequestDTO dto, User user) {
+	 	 ProfileAdmin profileAdmin = profileAdminRepository.findById(user.getId())
+	 	     	.orElseThrow(() -> new NotFoundException("Usuário Admin não encontrado"));
+	 	 School school = profileAdmin.getSchool();
+	 	
+	 	 ProfilePlayer profilePlayer = profilePlayerRepository.findById(id)
+	 	     	.orElseThrow(() -> new NotFoundException("Aluno não encontrado"));
+	 	
+	 	 if (!profilePlayer.getSchool().getId().equals(school.getId())) {
+	 	     throw new IllegalArgumentException("Este aluno não pertence à sua escola.");
+	 	 }
+	 	
+	 	 profilePlayer.setFirstname(dto.firstname());
+	 	 profilePlayer.setLastname(dto.lastname());
+	 	 profilePlayer.setBirthDate(dto.birthDate());
+	 	 profilePlayer.setRg(dto.rg());
+	 	 profilePlayer.setCpf(dto.cpf());
+	 	 profilePlayer.setPhoneNumber(dto.phoneNumber());
+	 	 profilePlayer.setAddress(dto.address());
+	 	 profilePlayer.setAddressNumber(dto.addressNumber());
+	 	 profilePlayer.setAddressNeighborhood(dto.addressNeighborhood());
+	 	 profilePlayer.setAddressComplement(dto.addressComplement());
+	 	 profilePlayer.setPostcode(dto.postcode());
+	 	 profilePlayer.setCollege(dto.college());
+	 	 profilePlayer.setCollegeAddress(dto.collegeAddress());
+	 	 profilePlayer.setCollegeNeighborhood(dto.collegeNeighborhood());
+	 	 profilePlayer.setCollegeComplement(dto.collegeComplement());
+	 	 profilePlayer.setCollegePostcode(dto.collegePostcode());
+	 	 profilePlayer.setCollegePhone(dto.collegePhone());
+	 	 profilePlayer.setCollegeSeries(dto.collegeSeries());
+	 	 profilePlayer.setCollegeTime(dto.collegeTime());
+	 	 profilePlayer.setOrigin(dto.origin());
+	 	 profilePlayer.setRegistrationId(dto.registrationId());
+	 	
+	 	 return profilePlayerRepository.save(profilePlayer);
 	 }
 	 
 }
