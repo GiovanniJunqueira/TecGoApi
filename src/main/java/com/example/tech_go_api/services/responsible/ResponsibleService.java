@@ -63,6 +63,31 @@ public class ResponsibleService {
         responsibleRepository.deleteById(id);
     }
 
+	public List<ResponsibleResponse> findByPlayer(String playerId) {
+		return responsibleRepository.findAll().stream()
+		    	.filter(r -> r.getPlayers().stream().anyMatch(p -> p.getId().equals(playerId)))
+		    	.map(this::toResponse)
+		    	.toList();
+	}
+
+	public void updateResponsiblesForPlayer(String playerId, List<String> responsibleIds) {
+		ProfilePlayer player = profilePlayerRepository.findById(playerId)
+		    	.orElseThrow(() -> new NotFoundException("Aluno não encontrado"));
+		
+		List<Responsible> all = responsibleRepository.findAll();
+		for (Responsible r : all) {
+			if (r.getPlayers().removeIf(p -> p.getId().equals(playerId))) {
+				responsibleRepository.save(r);
+			}
+		}
+		
+		List<Responsible> newResponsibles = responsibleRepository.findAllById(responsibleIds);
+		for (Responsible r : newResponsibles) {
+			r.getPlayers().add(player);
+			responsibleRepository.save(r);
+		}
+	}
+
     private void updateEntityFromDto(Responsible entity, ResponsibleResponse dto) {
         entity.setName(dto.getName());
         entity.setPhone(dto.getPhone());

@@ -62,4 +62,11 @@ public class ProfilePlayerController {
 		
 		return profilePlayerService.getById(id, user);
     }
+	
+	@PutMapping(path = "/{id}")
+	public ProfilePlayer updateProfilePlayer(@PathVariable String id,
+	                                     @RequestBody @Valid ProfilePlayerCreateRequestDTO dto) {
+		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		return profilePlayerService.updateProfilePlayer(id, dto, user);
+	}
 }

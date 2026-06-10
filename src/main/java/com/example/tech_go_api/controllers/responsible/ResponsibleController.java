@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.tech_go_api.dto.responsible.ResponsibleResponse;
+import com.example.tech_go_api.dto.responsible.UpdatePlayerResponsiblesRequest;
 import com.example.tech_go_api.services.responsible.ResponsibleService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -51,6 +52,18 @@ public class ResponsibleController {
                                                       @RequestBody @Valid ResponsibleResponse request) {
         return ResponseEntity.ok(responsibleService.update(id, request));
     }
+
+	@GetMapping("/by-player/{playerId}")
+	public ResponseEntity<List<ResponsibleResponse>> findByPlayer(@PathVariable String playerId) {
+		return ResponseEntity.ok(responsibleService.findByPlayer(playerId));
+	}
+
+	@PutMapping("/by-player/{playerId}")
+	public ResponseEntity<Void> updateForPlayer(@PathVariable String playerId,
+	                                        @RequestBody UpdatePlayerResponsiblesRequest request) {
+		responsibleService.updateResponsiblesForPlayer(playerId, request.responsibleIds());
+		return ResponseEntity.noContent().build();
+	}
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable String id) {
