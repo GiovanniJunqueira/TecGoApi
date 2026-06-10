@@ -1,20 +1,21 @@
-package com.example.tech_go_api.domain.users.base;
+package com.example.tech_go_api.domain.payment;
+
 
 import java.io.Serializable;
+import java.time.LocalDate;
 
-import org.hibernate.annotations.SQLDelete;
-
-import com.example.tech_go_api.domain.users.Role;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.example.tech_go_api.domain.profileplayer.ProfilePlayer;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,13 +23,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "t_user")
+@Table(name = "t_payment")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Inheritance(strategy = InheritanceType.JOINED)
-public class User implements Serializable {
+public class Payment implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -36,13 +37,12 @@ public class User implements Serializable {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    private String email;
-    @JsonIgnore
-    private String password;
-
-    @Enumerated(EnumType.STRING)
-    private Role role;
+    private boolean status;
+    private LocalDate paidAt;
+    private String month;
     
-    private Boolean isDeleted;
-    
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = true)
+    @JsonBackReference
+    private ProfilePlayer profilePlayer;
 }

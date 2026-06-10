@@ -1,11 +1,8 @@
-package com.example.tech_go_api.domain.users.base;
+package com.example.tech_go_api.domain.teacher;
 
 import java.io.Serializable;
-
-import org.hibernate.annotations.SQLDelete;
-
-import com.example.tech_go_api.domain.users.Role;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -13,8 +10,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,13 +17,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "t_user")
+@Table(name = "t_teacher")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Inheritance(strategy = InheritanceType.JOINED)
-public class User implements Serializable {
+public class Teacher implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -36,13 +30,20 @@ public class User implements Serializable {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
+    private String name;
+
     private String email;
-    @JsonIgnore
-    private String password;
+
+    private String phone;
+
+    private String role; // função/cargo
+
+    private LocalDate admissionDate;
 
     @Enumerated(EnumType.STRING)
-    private Role role;
-    
-    private Boolean isDeleted;
-    
+    private TeacherStatus status;
+
+    private BigDecimal salary;
+
+    private String notes;
 }
