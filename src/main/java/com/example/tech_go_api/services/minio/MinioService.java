@@ -79,10 +79,16 @@ public class MinioService implements InitializingBean {
                 "  ]\n" +
                 "}";
 
-        minioClient.setBucketPolicy(SetBucketPolicyArgs.builder()
-                .bucket(bucketName)
-                .config(publicPolicy)
-                .build());
+        try {
+            minioClient.setBucketPolicy(SetBucketPolicyArgs.builder()
+                    .bucket(bucketName)
+                    .config(publicPolicy)
+                    .build());
+        } catch (Exception e) {
+            log.warn("Não foi possível definir a bucket policy pública para '{}' (o provedor de storage pode não " +
+                    "suportar essa operação, ex: Cloudflare R2). Arquivos continuarão acessíveis via URL pré-assinada. Causa: {}",
+                    bucketName, e.getMessage());
+        }
     }
 
     public String uploadFile(MultipartFile file, FileType fileType) throws Exception {
