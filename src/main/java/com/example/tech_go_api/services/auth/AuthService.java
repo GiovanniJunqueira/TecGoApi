@@ -87,7 +87,7 @@ public class AuthService {
 
     @Transactional
     public void logout(User user) {
-        refreshTokenRepository.deleteByUser(user);
+        refreshTokenRepository.findByUser(user).ifPresent(refreshTokenRepository::delete);
     }
 
 }
