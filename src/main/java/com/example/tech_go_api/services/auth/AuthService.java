@@ -2,6 +2,7 @@ package com.example.tech_go_api.services.auth;
 
 import com.example.tech_go_api.domain.token.RefreshToken;
 import com.example.tech_go_api.domain.users.base.User;
+import com.example.tech_go_api.dto.auth.ChangePasswordRequestDTO;
 import com.example.tech_go_api.dto.auth.LoginRequestDTO;
 import com.example.tech_go_api.dto.auth.LoginResponseDTO;
 import com.example.tech_go_api.dto.auth.TokenRefreshRequestDTO;
@@ -10,6 +11,7 @@ import com.example.tech_go_api.exceptions.AuthException;
 import com.example.tech_go_api.exceptions.BusinessException;
 import com.example.tech_go_api.exceptions.NotFoundException;
 import com.example.tech_go_api.infra.security.TokenService;
+import com.example.tech_go_api.repositories.token.RefreshTokenRepository;
 import com.example.tech_go_api.repositories.user.UserRepository;
 import com.example.tech_go_api.cache.auth.AuthCacheService;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
     private final AuthCacheService authCacheService;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     public ResponseEntity<LoginResponseDTO> login(LoginRequestDTO body) {
         User user = repository.findByEmail(body.email())
@@ -67,6 +70,22 @@ public class AuthService {
 
     public Object me(String userId) {
         return authCacheService.getMe(userId);
+    }
+
+    public void changePassword(String userId, ChangePasswordRequestDTO body) {
+        User user = repository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Usuário não encontrado"));
+
+        if (!passwordEncoder.matches(body.currentPassword(), user.getPassword())) {
+            throw new BusinessException("Senha atual incorreta");
+        }
+
+        user.setPassword(passwordEncoder.encode(body.newPassword()));
+        repository.save(user);
+    }
+
+    public void logout(User user) {
+        refreshTokenRepository.deleteByUser(user);
     }
 
 }

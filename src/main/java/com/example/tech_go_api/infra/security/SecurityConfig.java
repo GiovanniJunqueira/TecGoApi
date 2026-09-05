@@ -36,6 +36,7 @@ public class SecurityConfig {
                         .requestMatchers("/player/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/school/**").hasRole("MASTER")
                         .requestMatchers(HttpMethod.GET, "/school/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/school/**").hasRole("ADMIN")
 
                         .requestMatchers(
                                 "/",

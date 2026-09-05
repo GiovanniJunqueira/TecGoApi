@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.tech_go_api.domain.game.Game;
 import com.example.tech_go_api.domain.game.GameCategory;
@@ -49,6 +50,35 @@ public class GameService {
         gamePlayerStatsRepository.saveAll(stats);
 
         List<GamePlayerStatsResponse> playerResponses = stats.stream()
+                .map(this::toStatsResponse)
+                .collect(Collectors.toList());
+
+        return new GameResponse(savedGame, playerResponses);
+    }
+
+    @Transactional
+    public GameResponse update(String id, GameCreateRequest request) {
+        Game game = gameRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Jogo não encontrado"));
+
+        game.setType(request.type());
+        game.setCategory(request.category());
+        game.setOpponent(request.opponent());
+        game.setDate(request.date());
+        game.setHomeScore(request.homeScore());
+        game.setAwayScore(request.awayScore());
+        game.setLocation(request.location());
+
+        game.getPlayers().clear();
+        if (request.players() != null) {
+            request.players().stream()
+                    .map(p -> toStats(p, game))
+                    .forEach(game.getPlayers()::add);
+        }
+
+        Game savedGame = gameRepository.save(game);
+
+        List<GamePlayerStatsResponse> playerResponses = savedGame.getPlayers().stream()
                 .map(this::toStatsResponse)
                 .collect(Collectors.toList());
 

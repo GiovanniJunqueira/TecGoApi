@@ -7,6 +7,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,6 +17,7 @@ import com.example.tech_go_api.domain.school.School;
 import com.example.tech_go_api.domain.users.base.User;
 import com.example.tech_go_api.dto.school.SchoolCreateDTO;
 import com.example.tech_go_api.dto.school.SchoolResponseDTO;
+import com.example.tech_go_api.dto.school.SchoolUpdateDTO;
 import com.example.tech_go_api.exceptions.BusinessException;
 import com.example.tech_go_api.services.school.SchoolService;
 
@@ -54,6 +56,15 @@ public class SchoolController {
         SchoolResponseDTO response = schoolService.findByUser(user);
         return ResponseEntity.ok(response);
     }
-    
-    
+
+    @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<SchoolResponseDTO> update(
+            @Valid @ModelAttribute SchoolUpdateDTO dto,
+            @RequestParam(value = "logo", required = false) MultipartFile logoFile) {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        dto.setLogoFile(logoFile);
+        SchoolResponseDTO response = schoolService.update(user, dto);
+        return ResponseEntity.ok(response);
+    }
+
 }

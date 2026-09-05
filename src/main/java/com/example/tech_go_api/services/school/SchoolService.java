@@ -7,9 +7,12 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.tech_go_api.cache.school.SchoolCacheService;
 import com.example.tech_go_api.domain.school.School;
 import com.example.tech_go_api.domain.users.base.User;
+import com.example.tech_go_api.domain.users.profileadmin.ProfileAdmin;
 import com.example.tech_go_api.dto.school.SchoolCreateDTO;
 import com.example.tech_go_api.dto.school.SchoolResponseDTO;
+import com.example.tech_go_api.dto.school.SchoolUpdateDTO;
 import com.example.tech_go_api.exceptions.ConflictException;
+import com.example.tech_go_api.exceptions.NotFoundException;
 import com.example.tech_go_api.repositories.school.SchoolRepository;
 import com.example.tech_go_api.services.minio.FileType;
 import com.example.tech_go_api.services.minio.MinioService;
@@ -49,6 +52,29 @@ public class SchoolService {
     
     
     public SchoolResponseDTO findByUser(User user) {
+        return schoolCacheService.findByUser(user);
+    }
+
+    public SchoolResponseDTO update(User user, SchoolUpdateDTO dto) {
+        if (!(user instanceof ProfileAdmin)) {
+            throw new NotFoundException("Usuário não é um administrador de escola");
+        }
+
+        ProfileAdmin admin = (ProfileAdmin) user;
+        School school = admin.getSchool();
+        if (school == null) {
+            throw new NotFoundException("Administrador não está associado a nenhuma escola");
+        }
+
+        school.setName(dto.getName());
+        school.setAddress(dto.getAddress());
+        school.setCity(dto.getCity());
+
+        processLogoUpload(dto.getLogoFile(), school);
+
+        schoolRepository.save(school);
+        schoolCacheService.evictSchoolCache(user.getId());
+
         return schoolCacheService.findByUser(user);
     }
     

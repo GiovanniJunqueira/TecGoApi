@@ -1,6 +1,7 @@
 package com.example.tech_go_api.controllers.auth;
 
 import com.example.tech_go_api.domain.users.base.User;
+import com.example.tech_go_api.dto.auth.ChangePasswordRequestDTO;
 import com.example.tech_go_api.dto.auth.LoginRequestDTO;
 import com.example.tech_go_api.dto.auth.LoginResponseDTO;
 import com.example.tech_go_api.dto.auth.TokenRefreshRequestDTO;
@@ -13,8 +14,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -41,6 +44,20 @@ public class AuthController {
     public ResponseEntity<?> me() {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(authService.me(user.getId()));
+    }
+
+    @PutMapping("/change-password")
+    public ResponseEntity<Void> changePassword(@RequestBody @Valid ChangePasswordRequestDTO body) {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        authService.changePassword(user.getId(), body);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/logout")
+    public ResponseEntity<Void> logout() {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        authService.logout(user);
+        return ResponseEntity.noContent().build();
     }
 
 }
