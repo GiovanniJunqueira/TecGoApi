@@ -14,31 +14,40 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 
 import com.example.tech_go_api.domain.profileplayer.ProfilePlayer;
+import com.example.tech_go_api.domain.responsible.Responsible;
 import com.example.tech_go_api.domain.school.School;
 import com.example.tech_go_api.domain.users.Role;
 import com.example.tech_go_api.domain.users.base.User;
 import com.example.tech_go_api.domain.users.profileadmin.ProfileAdmin;
 import com.example.tech_go_api.dto.profileplayer.ProfilePlayerCreateRequestDTO;
 import com.example.tech_go_api.dto.profileplayer.ProfilePlayerSoftDeleteRequestDTO;
+import com.example.tech_go_api.exceptions.BusinessException;
 import com.example.tech_go_api.exceptions.NotFoundException;
+import com.example.tech_go_api.repositories.game.GamePlayerStatsRepository;
+import com.example.tech_go_api.repositories.payment.PaymentRepository;
 import com.example.tech_go_api.repositories.profileadmin.ProfileAdminRepository;
 import com.example.tech_go_api.repositories.profileplayer.ProfilePlayerRepository;
+import com.example.tech_go_api.repositories.responsible.ResponsibleRepository;
 import com.example.tech_go_api.repositories.school.SchoolRepository;
 import com.example.tech_go_api.services.payment.PaymentService;
 
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class ProfilePlayerService {
-	
+
 	private final ProfilePlayerRepository profilePlayerRepository;
 	private final ProfileAdminRepository profileAdminRepository;
 	private final SchoolRepository schoolRepository;
-	
+	private final PaymentRepository paymentRepository;
+	private final GamePlayerStatsRepository gamePlayerStatsRepository;
+	private final ResponsibleRepository responsibleRepository;
+
 	@Autowired
 	PaymentService paymentService;
 
@@ -97,17 +106,72 @@ public class ProfilePlayerService {
 		 ProfileAdmin profileAdmin = profileAdminRepository.findById(user.getId())
 		 			.orElseThrow(()-> new NotFoundException("Usuário Admin não encontrado"));
 		 School school = profileAdmin.getSchool();
-		 
+
 		 ProfilePlayer profilePlayer = profilePlayerRepository.findById(id)
 		            .orElseThrow(() -> new NotFoundException("Aluno não encontrado"));
-		 
+
 		 if (!profilePlayer.getSchool().getId().equals(school.getId())) {
 		        throw new IllegalArgumentException("Este aluno não pertence à sua escola.");
 		    }
-		 
+
 		 profilePlayer.setIsDeleted(true);
-		 profilePlayerRepository.save(profilePlayer);	 
-		 return ResponseEntity.ok("Usuario deletado com sucesso");
+		 profilePlayer.setInactiveSince(LocalDate.now());
+		 profilePlayerRepository.save(profilePlayer);
+		 return ResponseEntity.ok("Aluno marcado como inativo com sucesso");
+	 }
+
+	 public ProfilePlayer reactivateProfilePlayer(String id, User user) {
+		 ProfileAdmin profileAdmin = profileAdminRepository.findById(user.getId())
+		 			.orElseThrow(()-> new NotFoundException("Usuário Admin não encontrado"));
+		 School school = profileAdmin.getSchool();
+
+		 ProfilePlayer profilePlayer = profilePlayerRepository.findById(id)
+		            .orElseThrow(() -> new NotFoundException("Aluno não encontrado"));
+
+		 if (!profilePlayer.getSchool().getId().equals(school.getId())) {
+		        throw new IllegalArgumentException("Este aluno não pertence à sua escola.");
+		    }
+
+		 profilePlayer.setIsDeleted(false);
+		 profilePlayer.setInactiveSince(null);
+		 return profilePlayerRepository.save(profilePlayer);
+	 }
+
+	 public Page<ProfilePlayer> findAllInactiveBySchool(User user, Pageable pageable) {
+		 ProfileAdmin profileAdmin = profileAdminRepository.findById(user.getId())
+		 			.orElseThrow(()-> new NotFoundException("Usuário Admin não encontrado"));
+
+		 School school = profileAdmin.getSchool();
+		 return profilePlayerRepository.findAllBySchoolAndIsDeletedTrue(school, pageable);
+	 }
+
+	 @Transactional
+	 public void hardDeleteProfilePlayer(String id, User user) {
+		 ProfileAdmin profileAdmin = profileAdminRepository.findById(user.getId())
+		 			.orElseThrow(()-> new NotFoundException("Usuário Admin não encontrado"));
+		 School school = profileAdmin.getSchool();
+
+		 ProfilePlayer profilePlayer = profilePlayerRepository.findById(id)
+		            .orElseThrow(() -> new NotFoundException("Aluno não encontrado"));
+
+		 if (!profilePlayer.getSchool().getId().equals(school.getId())) {
+		        throw new IllegalArgumentException("Este aluno não pertence à sua escola.");
+		    }
+
+		 if (Boolean.FALSE.equals(profilePlayer.getIsDeleted())) {
+			 throw new BusinessException("Só é possível excluir permanentemente alunos que já estão inativos");
+		 }
+
+		 paymentRepository.deleteAll(paymentRepository.findByProfilePlayerId(id));
+		 gamePlayerStatsRepository.deleteAll(gamePlayerStatsRepository.findByPlayerId(id));
+
+		 for (Responsible responsible : responsibleRepository.findAll()) {
+			 if (responsible.getPlayers().removeIf(p -> p.getId().equals(id))) {
+				 responsibleRepository.save(responsible);
+			 }
+		 }
+
+		 profilePlayerRepository.delete(profilePlayer);
 	 }
 	 
 	 public ProfilePlayer getById(String id, User user){

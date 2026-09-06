@@ -47,15 +47,35 @@ public class ProfilePlayerController {
 	 public ResponseEntity<Page<ProfilePlayer>> findAllBySchool(@PageableDefault(size = 10, sort = "firstname", direction = Sort.Direction.ASC) Pageable pageable) {
 		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		Page<ProfilePlayer> players = profilePlayerService.findAllBySchoolAndIsDeletFalse(user, pageable);
-		return ResponseEntity.ok(players);		
+		return ResponseEntity.ok(players);
     }
-	
+
+	@GetMapping (path = "/findAllInativos")
+	 public ResponseEntity<Page<ProfilePlayer>> findAllInativos(@PageableDefault(size = 10, sort = "firstname", direction = Sort.Direction.ASC) Pageable pageable) {
+		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		Page<ProfilePlayer> players = profilePlayerService.findAllInactiveBySchool(user, pageable);
+		return ResponseEntity.ok(players);
+    }
+
 	@DeleteMapping(path = "/deletPlayer/{id}")
 	public ResponseEntity<String> softDeleteProfilePlayer(@PathVariable String id) {
-		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal(); 
+		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return profilePlayerService.softDeleteProfilePlayer(id, user);
     }
-	
+
+	@PutMapping(path = "/reativar/{id}")
+	public ProfilePlayer reactivateProfilePlayer(@PathVariable String id) {
+		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		return profilePlayerService.reactivateProfilePlayer(id, user);
+	}
+
+	@DeleteMapping(path = "/excluirPermanente/{id}")
+	public ResponseEntity<Void> hardDeleteProfilePlayer(@PathVariable String id) {
+		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		profilePlayerService.hardDeleteProfilePlayer(id, user);
+		return ResponseEntity.noContent().build();
+	}
+
 	@GetMapping (path = "/findById/{id}")
 	public ProfilePlayer findById(@PathVariable String id) {
 		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();

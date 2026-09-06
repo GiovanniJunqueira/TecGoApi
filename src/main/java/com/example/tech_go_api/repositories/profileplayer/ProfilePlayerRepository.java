@@ -11,4 +11,5 @@ import com.example.tech_go_api.domain.school.School;
 
 public interface ProfilePlayerRepository extends JpaRepository<ProfilePlayer, String>{
 	Page<ProfilePlayer> findAllBySchoolAndIsDeletedFalse(School school, Pageable pageable);
+	Page<ProfilePlayer> findAllBySchoolAndIsDeletedTrue(School school, Pageable pageable);
 }
