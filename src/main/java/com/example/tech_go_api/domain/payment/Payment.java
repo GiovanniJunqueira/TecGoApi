@@ -9,6 +9,8 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Entity;
 
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -40,7 +42,11 @@ public class Payment implements Serializable {
     private boolean status;
     private LocalDate paidAt;
     private String month;
-    
+
+    @Enumerated(EnumType.STRING)
+    private PaymentMethod paymentMethod;
+
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = true)
     @JsonBackReference

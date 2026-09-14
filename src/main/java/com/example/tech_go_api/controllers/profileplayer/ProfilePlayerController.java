@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -44,16 +45,20 @@ public class ProfilePlayerController {
     }
 	
 	@GetMapping (path = "/findAll")
-	 public ResponseEntity<Page<ProfilePlayer>> findAllBySchool(@PageableDefault(size = 10, sort = "firstname", direction = Sort.Direction.ASC) Pageable pageable) {
+	 public ResponseEntity<Page<ProfilePlayer>> findAllBySchool(
+			 @RequestParam(required = false) String search,
+			 @PageableDefault(size = 10, sort = "firstname", direction = Sort.Direction.ASC) Pageable pageable) {
 		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		Page<ProfilePlayer> players = profilePlayerService.findAllBySchoolAndIsDeletFalse(user, pageable);
+		Page<ProfilePlayer> players = profilePlayerService.findAllBySchoolAndIsDeletFalse(user, search, pageable);
 		return ResponseEntity.ok(players);
     }
 
 	@GetMapping (path = "/findAllInativos")
-	 public ResponseEntity<Page<ProfilePlayer>> findAllInativos(@PageableDefault(size = 10, sort = "firstname", direction = Sort.Direction.ASC) Pageable pageable) {
+	 public ResponseEntity<Page<ProfilePlayer>> findAllInativos(
+			 @RequestParam(required = false) String search,
+			 @PageableDefault(size = 10, sort = "firstname", direction = Sort.Direction.ASC) Pageable pageable) {
 		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		Page<ProfilePlayer> players = profilePlayerService.findAllInactiveBySchool(user, pageable);
+		Page<ProfilePlayer> players = profilePlayerService.findAllInactiveBySchool(user, search, pageable);
 		return ResponseEntity.ok(players);
     }
 

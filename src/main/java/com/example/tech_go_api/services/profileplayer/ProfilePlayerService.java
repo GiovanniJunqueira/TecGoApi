@@ -93,12 +93,12 @@ public class ProfilePlayerService {
 	    }
 	 
 //	 @Cacheable(cacheNames = "getAllPlayers", key = "#schoolId")
-	 public Page<ProfilePlayer> findAllBySchoolAndIsDeletFalse(User user, Pageable pageable){
+	 public Page<ProfilePlayer> findAllBySchoolAndIsDeletFalse(User user, String search, Pageable pageable){
 		 ProfileAdmin profileAdmin = profileAdminRepository.findById(user.getId())
 		 			.orElseThrow(()-> new NotFoundException("Usuário Admin não encontrado"));
-		 	
-		 School school = profileAdmin.getSchool();	 	
-		 return profilePlayerRepository.findAllBySchoolAndIsDeletedFalse(school, pageable);
+
+		 School school = profileAdmin.getSchool();
+		 return profilePlayerRepository.searchBySchoolAndIsDeleted(school, false, search, pageable);
 	 }
  
 	 
@@ -137,12 +137,12 @@ public class ProfilePlayerService {
 		 return profilePlayerRepository.save(profilePlayer);
 	 }
 
-	 public Page<ProfilePlayer> findAllInactiveBySchool(User user, Pageable pageable) {
+	 public Page<ProfilePlayer> findAllInactiveBySchool(User user, String search, Pageable pageable) {
 		 ProfileAdmin profileAdmin = profileAdminRepository.findById(user.getId())
 		 			.orElseThrow(()-> new NotFoundException("Usuário Admin não encontrado"));
 
 		 School school = profileAdmin.getSchool();
-		 return profilePlayerRepository.findAllBySchoolAndIsDeletedTrue(school, pageable);
+		 return profilePlayerRepository.searchBySchoolAndIsDeleted(school, true, search, pageable);
 	 }
 
 	 @Transactional
