@@ -14,5 +14,8 @@ public interface PaymentRepository extends JpaRepository<Payment, String> {
     List<Payment> findByProfilePlayerSchool(School school);
     List<Payment> findByProfilePlayerSchoolAndMonth(School school, String month);
     List<Payment> findByProfilePlayerSchoolAndMonthAndStatus(School school, String month, boolean status);
+
+    boolean existsByProfilePlayerIdAndMonth(String playerId, String month);
+    List<Payment> findByStatus(boolean status);
 }
 

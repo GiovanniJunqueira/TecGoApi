@@ -1,5 +1,6 @@
 package com.example.tech_go_api.dto.payment;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import com.example.tech_go_api.domain.payment.Payment;
@@ -16,6 +17,7 @@ public class PaymentResponse {
     private LocalDate paidAt;
     private String month;
     private PaymentMethod paymentMethod;
+    private BigDecimal amount;
     private String playerId;
     private String playerName;
 
@@ -25,6 +27,7 @@ public class PaymentResponse {
         this.paidAt = payment.getPaidAt();
         this.month = payment.getMonth();
         this.paymentMethod = payment.getPaymentMethod();
+        this.amount = payment.getAmount();
         if (payment.getProfilePlayer() != null) {
             this.playerId = payment.getProfilePlayer().getId();
             this.playerName = payment.getProfilePlayer().getFirstname();

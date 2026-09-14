@@ -30,6 +30,9 @@ public class PaymentService {
     @Autowired
     private ProfilePlayerRepository profilePlayerRepository;
 
+    @Autowired
+    private PaymentPricingService paymentPricingService;
+
     private School schoolOf(User user) {
         ProfileAdmin profileAdmin = profileAdminRepository.findById(user.getId())
                 .orElseThrow(() -> new NotFoundException("Usuário Admin não encontrado"));
@@ -55,9 +58,11 @@ public class PaymentService {
             throw new IllegalArgumentException("Este pagamento não pertence à sua escola.");
         }
 
+        LocalDate paidAt = LocalDate.now();
         payment.setStatus(true);
-        payment.setPaidAt(LocalDate.now());
+        payment.setPaidAt(paidAt);
         payment.setPaymentMethod(paymentMethod);
+        payment.setAmount(paymentPricingService.calculateAmount(payment.getProfilePlayer().getPaymentPlan(), paidAt));
         return paymentRepository.save(payment);
     }
 

@@ -2,6 +2,8 @@ package com.example.tech_go_api.dto.profileplayer;
 
 import java.time.LocalDate;
 
+import com.example.tech_go_api.domain.profileplayer.PaymentPlan;
+
 import jakarta.validation.constraints.NotBlank;
 
 public record ProfilePlayerCreateRequestDTO(
@@ -26,7 +28,8 @@ public record ProfilePlayerCreateRequestDTO(
 		 String collegeTime,
 		 String origin,
 		 String registrationId,
-		 String turma
+		 String turma,
+		 PaymentPlan paymentPlan
 		) {
 	
 }

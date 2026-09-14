@@ -83,6 +83,7 @@ public class ProfilePlayerService {
 	        profilePlayer.setOrigin(dto.origin());
 	        profilePlayer.setRegistrationId(dto.registrationId());
 	        profilePlayer.setTurma(resolveTurma(dto.turma(), dto.birthDate()));
+	        profilePlayer.setPaymentPlan(dto.paymentPlan());
 	        profilePlayer.setIsDeleted(false);
 
 	        ProfilePlayer saved = profilePlayerRepository.save(profilePlayer);
@@ -224,6 +225,7 @@ public class ProfilePlayerService {
 	 	 profilePlayer.setOrigin(dto.origin());
 	 	 profilePlayer.setRegistrationId(dto.registrationId());
 	 	 profilePlayer.setTurma(resolveTurma(dto.turma(), dto.birthDate()));
+	 	 profilePlayer.setPaymentPlan(dto.paymentPlan());
 
 	 	 return profilePlayerRepository.save(profilePlayer);
 	 }

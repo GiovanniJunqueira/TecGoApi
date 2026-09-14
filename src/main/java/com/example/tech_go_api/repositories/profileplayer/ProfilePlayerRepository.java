@@ -13,6 +13,8 @@ import com.example.tech_go_api.domain.school.School;
 
 public interface ProfilePlayerRepository extends JpaRepository<ProfilePlayer, String>{
 
+	List<ProfilePlayer> findBySchoolAndIsDeletedFalse(School school);
+
 	@Query("SELECT p FROM ProfilePlayer p WHERE p.school = :school AND p.isDeleted = :isDeleted AND ("
 			+ ":search IS NULL OR :search = '' "
 			+ "OR LOWER(p.firstname) LIKE LOWER(CONCAT('%', :search, '%')) "

@@ -8,6 +8,8 @@ import com.example.tech_go_api.domain.users.profileadmin.ProfileAdmin;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrimaryKeyJoinColumn;
@@ -52,6 +54,9 @@ public class ProfilePlayer extends User {
 	private int paymentDay;
 	private LocalDate inactiveSince;
 	private String turma;
+
+	@Enumerated(EnumType.STRING)
+	private PaymentPlan paymentPlan;
 
 	@ManyToOne
     @JoinColumn(name = "school_id", nullable = true)

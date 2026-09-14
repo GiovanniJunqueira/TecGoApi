@@ -2,6 +2,7 @@ package com.example.tech_go_api.domain.payment;
 
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import com.example.tech_go_api.domain.profileplayer.ProfilePlayer;
@@ -46,6 +47,7 @@ public class Payment implements Serializable {
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
 
+    private BigDecimal amount;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = true)
