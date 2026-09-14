@@ -1,5 +1,6 @@
 package com.example.tech_go_api.repositories.profileplayer;
 
+import java.time.LocalDate;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +15,7 @@ import com.example.tech_go_api.domain.school.School;
 public interface ProfilePlayerRepository extends JpaRepository<ProfilePlayer, String>{
 
 	List<ProfilePlayer> findBySchoolAndIsDeletedFalse(School school);
+	List<ProfilePlayer> findByIsDeletedTrueAndInactiveSinceBefore(LocalDate cutoff);
 
 	@Query("SELECT p FROM ProfilePlayer p WHERE p.school = :school AND p.isDeleted = :isDeleted AND ("
 			+ ":search IS NULL OR :search = '' "

@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.tech_go_api.services.scheduled.PaymentScheduledJobs;
+import com.example.tech_go_api.services.scheduled.PlayerScheduledJobs;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 public class JobsController {
 
     private final PaymentScheduledJobs paymentScheduledJobs;
+    private final PlayerScheduledJobs playerScheduledJobs;
 
     @PostMapping("/gerar-mensalidades")
     public ResponseEntity<Void> gerarMensalidades() {
@@ -27,6 +29,12 @@ public class JobsController {
     @PostMapping("/limpar-pagamentos-antigos")
     public ResponseEntity<Void> limparPagamentosAntigos() {
         paymentScheduledJobs.purgeOldPaidPayments();
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/limpar-alunos-inativos")
+    public ResponseEntity<Void> limparAlunosInativos() {
+        playerScheduledJobs.purgeLongInactivePlayers();
         return ResponseEntity.noContent().build();
     }
 }

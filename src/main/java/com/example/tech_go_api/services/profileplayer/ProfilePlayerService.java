@@ -164,6 +164,13 @@ public class ProfilePlayerService {
 			 throw new BusinessException("Só é possível excluir permanentemente alunos que já estão inativos");
 		 }
 
+		 purgePlayer(profilePlayer);
+	 }
+
+	 @Transactional
+	 public void purgePlayer(ProfilePlayer profilePlayer) {
+		 String id = profilePlayer.getId();
+
 		 paymentRepository.deleteAll(paymentRepository.findByProfilePlayerId(id));
 		 gamePlayerStatsRepository.deleteAll(gamePlayerStatsRepository.findByPlayerId(id));
 
@@ -175,7 +182,7 @@ public class ProfilePlayerService {
 
 		 profilePlayerRepository.delete(profilePlayer);
 	 }
-	 
+
 	 public ProfilePlayer getById(String id, User user){
 		 ProfileAdmin profileAdmin = profileAdminRepository.findById(user.getId())
 		 			.orElseThrow(()-> new NotFoundException("Usuário Admin não encontrado"));
