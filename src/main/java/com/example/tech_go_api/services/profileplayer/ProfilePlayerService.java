@@ -82,6 +82,7 @@ public class ProfilePlayerService {
 	        profilePlayer.setCollegeTime(dto.collegeTime());
 	        profilePlayer.setOrigin(dto.origin());
 	        profilePlayer.setRegistrationId(dto.registrationId());
+	        profilePlayer.setTurma(resolveTurma(dto.turma(), dto.birthDate()));
 	        profilePlayer.setIsDeleted(false);
 
 	        ProfilePlayer saved = profilePlayerRepository.save(profilePlayer);
@@ -222,8 +223,19 @@ public class ProfilePlayerService {
 	 	 profilePlayer.setCollegeTime(dto.collegeTime());
 	 	 profilePlayer.setOrigin(dto.origin());
 	 	 profilePlayer.setRegistrationId(dto.registrationId());
-	 	
+	 	 profilePlayer.setTurma(resolveTurma(dto.turma(), dto.birthDate()));
+
 	 	 return profilePlayerRepository.save(profilePlayer);
 	 }
-	 
+
+	 private String resolveTurma(String turmaFromDto, LocalDate birthDate) {
+		 if (turmaFromDto != null && !turmaFromDto.isBlank()) {
+			 return turmaFromDto;
+		 }
+		 if (birthDate == null) {
+			 return null;
+		 }
+		 return String.format("Turma %02d", birthDate.getYear() % 100);
+	 }
+
 }

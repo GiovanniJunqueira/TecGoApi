@@ -51,6 +51,7 @@ public class ProfilePlayer extends User {
 	private String registrationId;
 	private int paymentDay;
 	private LocalDate inactiveSince;
+	private String turma;
 
 	@ManyToOne
     @JoinColumn(name = "school_id", nullable = true)

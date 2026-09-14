@@ -25,7 +25,8 @@ public record ProfilePlayerCreateRequestDTO(
 		 String collegeSeries,
 		 String collegeTime,
 		 String origin,
-		 String registrationId
+		 String registrationId,
+		 String turma
 		) {
 	
 }
