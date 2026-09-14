@@ -2,6 +2,7 @@ package com.example.tech_go_api.services.game;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -12,6 +13,7 @@ import com.example.tech_go_api.domain.game.GameCategory;
 import com.example.tech_go_api.domain.game.GamePlayerStats;
 import com.example.tech_go_api.domain.game.GameType;
 import com.example.tech_go_api.domain.profileplayer.ProfilePlayer;
+import com.example.tech_go_api.dto.game.GameAttendanceEntryDTO;
 import com.example.tech_go_api.dto.game.GameCreateRequest;
 import com.example.tech_go_api.dto.game.GamePlayerStatsRequest;
 import com.example.tech_go_api.dto.game.GamePlayerStatsResponse;
@@ -44,7 +46,7 @@ public class GameService {
         Game savedGame = gameRepository.save(game);
 
         List<GamePlayerStats> stats = request.players() != null
-                ? request.players().stream().map(p -> toStats(p, savedGame)).collect(Collectors.toList())
+                ? request.players().stream().map(p -> toStats(p, savedGame, null)).collect(Collectors.toList())
                 : List.of();
 
         gamePlayerStatsRepository.saveAll(stats);
@@ -69,10 +71,14 @@ public class GameService {
         game.setAwayScore(request.awayScore());
         game.setLocation(request.location());
 
+        Map<String, Boolean> attendedByPlayerId = game.getPlayers().stream()
+                .filter(s -> s.getPlayer() != null)
+                .collect(Collectors.toMap(s -> s.getPlayer().getId(), GamePlayerStats::getAttended, (a, b) -> a));
+
         game.getPlayers().clear();
         if (request.players() != null) {
             request.players().stream()
-                    .map(p -> toStats(p, game))
+                    .map(p -> toStats(p, game, attendedByPlayerId.get(p.playerId())))
                     .forEach(game.getPlayers()::add);
         }
 
@@ -85,7 +91,7 @@ public class GameService {
         return new GameResponse(savedGame, playerResponses);
     }
 
-    private GamePlayerStats toStats(GamePlayerStatsRequest req, Game game) {
+    private GamePlayerStats toStats(GamePlayerStatsRequest req, Game game, Boolean attended) {
         ProfilePlayer player = profilePlayerRepository.findById(req.playerId())
                 .orElseThrow(() -> new NotFoundException("Aluno não encontrado"));
 
@@ -95,6 +101,7 @@ public class GameService {
         stats.setGoals(req.goals());
         stats.setStarter(req.starter());
         stats.setNotes(req.notes());
+        stats.setAttended(attended);
         return stats;
     }
 
@@ -107,8 +114,32 @@ public class GameService {
                 name,
                 stats.getGoals(),
                 stats.getStarter(),
-                stats.getNotes()
+                stats.getNotes(),
+                stats.getAttended()
         );
+    }
+
+    @Transactional
+    public GameResponse updateAttendance(String gameId, List<GameAttendanceEntryDTO> entries) {
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new NotFoundException("Jogo não encontrado"));
+
+        Map<String, Boolean> attendedByPlayerId = entries.stream()
+                .collect(Collectors.toMap(GameAttendanceEntryDTO::playerId, GameAttendanceEntryDTO::attended, (a, b) -> b));
+
+        for (GamePlayerStats stats : game.getPlayers()) {
+            if (stats.getPlayer() != null && attendedByPlayerId.containsKey(stats.getPlayer().getId())) {
+                stats.setAttended(attendedByPlayerId.get(stats.getPlayer().getId()));
+            }
+        }
+
+        Game saved = gameRepository.save(game);
+
+        List<GamePlayerStatsResponse> playerResponses = saved.getPlayers().stream()
+                .map(this::toStatsResponse)
+                .collect(Collectors.toList());
+
+        return new GameResponse(saved, playerResponses);
     }
 
     public List<GameResponse> findAll(GameType type, GameCategory category, LocalDate startDate, LocalDate endDate) {

@@ -5,5 +5,6 @@ public record GamePlayerStatsResponse(
         String playerName,
         Integer goals,
         Boolean starter,
-        String notes
+        String notes,
+        Boolean attended
 ) {}

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.tech_go_api.domain.game.GameCategory;
 import com.example.tech_go_api.domain.game.GameType;
+import com.example.tech_go_api.dto.game.GameAttendanceEntryDTO;
 import com.example.tech_go_api.dto.game.GameCreateRequest;
 import com.example.tech_go_api.dto.game.GameResponse;
 import com.example.tech_go_api.services.game.GameService;
@@ -56,6 +57,11 @@ public class GameController {
     @PutMapping("/{id}")
     public ResponseEntity<GameResponse> update(@PathVariable String id, @RequestBody @Valid GameCreateRequest request) {
         return ResponseEntity.ok(gameService.update(id, request));
+    }
+
+    @PutMapping("/{id}/chamada")
+    public ResponseEntity<GameResponse> updateAttendance(@PathVariable String id, @RequestBody List<GameAttendanceEntryDTO> entries) {
+        return ResponseEntity.ok(gameService.updateAttendance(id, entries));
     }
 
     @GetMapping("/player/{playerId}")

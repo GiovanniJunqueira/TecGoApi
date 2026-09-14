@@ -43,4 +43,6 @@ public class GamePlayerStats implements Serializable {
     private Boolean starter;
 
     private String notes;
+
+    private Boolean attended;
 }
