@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.tech_go_api.services.scheduled.AulaScheduledJobs;
 import com.example.tech_go_api.services.scheduled.PaymentScheduledJobs;
 import com.example.tech_go_api.services.scheduled.PlayerScheduledJobs;
 
@@ -19,6 +20,7 @@ public class JobsController {
 
     private final PaymentScheduledJobs paymentScheduledJobs;
     private final PlayerScheduledJobs playerScheduledJobs;
+    private final AulaScheduledJobs aulaScheduledJobs;
 
     @PostMapping("/gerar-mensalidades")
     public ResponseEntity<Void> gerarMensalidades() {
@@ -35,6 +37,12 @@ public class JobsController {
     @PostMapping("/limpar-alunos-inativos")
     public ResponseEntity<Void> limparAlunosInativos() {
         playerScheduledJobs.purgeLongInactivePlayers();
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/limpar-aulas-antigas")
+    public ResponseEntity<Void> limparAulasAntigas() {
+        aulaScheduledJobs.purgeOldSessions();
         return ResponseEntity.noContent().build();
     }
 }
