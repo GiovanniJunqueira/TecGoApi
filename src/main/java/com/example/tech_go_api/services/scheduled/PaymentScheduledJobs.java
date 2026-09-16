@@ -33,7 +33,7 @@ public class PaymentScheduledJobs {
     // Todo dia 1 do mês, às 01:00, cria a cobrança pendente do mês para cada aluno ativo
     @Scheduled(cron = "0 0 1 1 * *")
     public void generateMonthlyPayments() {
-        String currentMonth = LocalDate.now().getYear() + "-" + LocalDate.now().getMonthValue();
+        String currentMonth = String.format("%d-%02d", LocalDate.now().getYear(), LocalDate.now().getMonthValue());
         int created = 0;
 
         for (School school : schoolRepository.findAll()) {

@@ -88,7 +88,7 @@ public class ProfilePlayerService {
 
 	        ProfilePlayer saved = profilePlayerRepository.save(profilePlayer);
 	        
-	        String currentMonth = LocalDate.now().getYear() + "-" + LocalDate.now().getMonthValue();
+	        String currentMonth = String.format("%d-%02d", LocalDate.now().getYear(), LocalDate.now().getMonthValue());
 	        paymentService.createPayment(saved, currentMonth);
 	        
 	        return (saved.getId());

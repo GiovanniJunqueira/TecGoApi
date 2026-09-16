@@ -25,7 +25,7 @@ public class DashboardService {
         long totalPlayers = profilePlayerRepository.count();
         long totalGames = gameRepository.count();
 
-        String currentMonth = LocalDate.now().getYear() + "-" + LocalDate.now().getMonthValue();
+        String currentMonth = String.format("%d-%02d", LocalDate.now().getYear(), LocalDate.now().getMonthValue());
 
         List<Payment> allThisMonth = paymentRepository.findByMonth(currentMonth);
         long totalPaymentsThisMonth = allThisMonth.size();

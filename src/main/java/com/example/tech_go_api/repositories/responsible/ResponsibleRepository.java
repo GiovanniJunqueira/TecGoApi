@@ -14,4 +14,6 @@ public interface ResponsibleRepository extends JpaRepository<Responsible, String
 
     @Query("SELECT DISTINCT r FROM Responsible r JOIN r.players p WHERE LOWER(p.firstname) LIKE LOWER(CONCAT('%', :studentName, '%'))")
     List<Responsible> findByStudentName(@Param("studentName") String studentName);
+
+    List<Responsible> findByPlayers_Id(String playerId);
 }
