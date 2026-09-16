@@ -5,9 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.tech_go_api.domain.payment.Payment;
 import com.example.tech_go_api.domain.payment.PaymentMethod;
-import com.example.tech_go_api.domain.profileplayer.ProfilePlayer;
 import com.example.tech_go_api.domain.users.base.User;
 import com.example.tech_go_api.dto.payment.MarkAsPaidRequestDTO;
 import com.example.tech_go_api.dto.payment.PaymentResponse;
@@ -31,10 +29,7 @@ public class PaymentController {
     public ResponseEntity<PaymentResponse> createPayment(
             @RequestParam String playerId,
             @RequestParam String month) {
-        ProfilePlayer player = new ProfilePlayer();
-        player.setId(playerId);
-        Payment payment = paymentService.createPayment(player, month);
-        return ResponseEntity.ok(paymentService.toResponse(payment));
+        return ResponseEntity.ok(paymentService.createPaymentForPlayer(playerId, month, currentUser()));
     }
 
     // Marcar pagamento como pago

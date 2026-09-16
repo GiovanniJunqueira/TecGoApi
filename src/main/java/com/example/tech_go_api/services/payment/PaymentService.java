@@ -55,6 +55,18 @@ public class PaymentService {
         return paymentRepository.save(payment);
     }
 
+    // Criar pagamento a partir do ID do aluno, validando que ele pertence à escola do admin logado
+    public PaymentResponse createPaymentForPlayer(String playerId, String month, User user) {
+        ProfilePlayer player = profilePlayerRepository.findById(playerId)
+                .orElseThrow(() -> new NotFoundException("Aluno não encontrado"));
+
+        if (!player.getSchool().getId().equals(schoolOf(user).getId())) {
+            throw new IllegalArgumentException("Este aluno não pertence à sua escola.");
+        }
+
+        return toResponse(createPayment(player, month));
+    }
+
     // Marcar pagamento como pago
     public PaymentResponse markAsPaid(String paymentId, PaymentMethod paymentMethod, User user) {
         Payment payment = paymentRepository.findById(paymentId)
