@@ -16,7 +16,7 @@ public interface PaymentRepository extends JpaRepository<Payment, String> {
     boolean existsByProfilePlayerIdAndMonth(String playerId, String month);
     List<Payment> findByStatus(boolean status);
 
-    @Query("SELECT DISTINCT p FROM Payment p WHERE p.profilePlayer.school = :school "
+    @Query("SELECT p FROM Payment p WHERE p.profilePlayer.school = :school "
             + "AND (:month IS NULL OR :month = '' OR p.month = :month) "
             + "AND (:status IS NULL OR p.status = :status) "
             + "AND (:search IS NULL OR :search = '' "
