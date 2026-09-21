@@ -207,6 +207,12 @@ public class ProfilePlayerService {
 			 }
 		 }
 
+		 for (AulaGrupo grupo : aulaGrupoRepository.findByPlayers_Id(id)) {
+			 if (grupo.getPlayers().removeIf(p -> p.getId().equals(id))) {
+				 aulaGrupoRepository.save(grupo);
+			 }
+		 }
+
 		 profilePlayerRepository.delete(profilePlayer);
 	 }
 
