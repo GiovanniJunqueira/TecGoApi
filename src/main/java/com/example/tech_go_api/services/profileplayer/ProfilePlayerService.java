@@ -25,6 +25,7 @@ import com.example.tech_go_api.dto.profileplayer.ProfilePlayerSoftDeleteRequestD
 import com.example.tech_go_api.exceptions.BusinessException;
 import com.example.tech_go_api.exceptions.NotFoundException;
 import com.example.tech_go_api.repositories.aula.AulaGrupoRepository;
+import com.example.tech_go_api.repositories.aula.AulaPresencaRepository;
 import com.example.tech_go_api.repositories.game.GamePlayerStatsRepository;
 import com.example.tech_go_api.repositories.payment.PaymentRepository;
 import com.example.tech_go_api.repositories.profileadmin.ProfileAdminRepository;
@@ -50,6 +51,7 @@ public class ProfilePlayerService {
 	private final GamePlayerStatsRepository gamePlayerStatsRepository;
 	private final ResponsibleRepository responsibleRepository;
 	private final AulaGrupoRepository aulaGrupoRepository;
+	private final AulaPresencaRepository aulaPresencaRepository;
 
 	@Autowired
 	PaymentService paymentService;
@@ -200,6 +202,7 @@ public class ProfilePlayerService {
 
 		 paymentRepository.deleteAll(paymentRepository.findByProfilePlayerId(id));
 		 gamePlayerStatsRepository.deleteAll(gamePlayerStatsRepository.findByPlayerId(id));
+		 aulaPresencaRepository.deleteAll(aulaPresencaRepository.findByPlayer_Id(id));
 
 		 for (Responsible responsible : responsibleRepository.findAll()) {
 			 if (responsible.getPlayers().removeIf(p -> p.getId().equals(id))) {
