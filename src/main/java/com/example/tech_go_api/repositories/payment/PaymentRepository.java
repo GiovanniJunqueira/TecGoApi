@@ -23,7 +23,8 @@ public interface PaymentRepository extends JpaRepository<Payment, String> {
             + "     OR LOWER(p.profilePlayer.firstname) LIKE LOWER(CONCAT('%', :search, '%')) "
             + "     OR LOWER(p.profilePlayer.lastname) LIKE LOWER(CONCAT('%', :search, '%')) "
             + "     OR EXISTS (SELECT 1 FROM Responsible r JOIN r.players rp "
-            + "                WHERE rp = p.profilePlayer AND LOWER(r.name) LIKE LOWER(CONCAT('%', :search, '%'))))")
+            + "                WHERE rp = p.profilePlayer AND LOWER(r.name) LIKE LOWER(CONCAT('%', :search, '%')))) "
+            + "ORDER BY p.profilePlayer.firstname ASC, p.profilePlayer.lastname ASC")
     List<Payment> search(
             @Param("school") School school,
             @Param("month") String month,

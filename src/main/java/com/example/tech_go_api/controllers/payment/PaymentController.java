@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.example.tech_go_api.domain.payment.PaymentMethod;
 import com.example.tech_go_api.domain.users.base.User;
+import com.example.tech_go_api.dto.payment.EditPaymentRequestDTO;
 import com.example.tech_go_api.dto.payment.MarkAsPaidRequestDTO;
 import com.example.tech_go_api.dto.payment.PaymentResponse;
 import com.example.tech_go_api.services.payment.PaymentService;
@@ -36,7 +37,14 @@ public class PaymentController {
     @PutMapping("/{id}/pay")
     public ResponseEntity<PaymentResponse> markAsPaid(@PathVariable String id, @RequestBody(required = false) MarkAsPaidRequestDTO body) {
         PaymentMethod method = body != null ? body.paymentMethod() : null;
-        return ResponseEntity.ok(paymentService.markAsPaid(id, method, currentUser()));
+        java.time.LocalDate paidAt = body != null ? body.paidAt() : null;
+        return ResponseEntity.ok(paymentService.markAsPaid(id, method, paidAt, currentUser()));
+    }
+
+    // Editar um pagamento já quitado (data em que pagou e/ou valor)
+    @PutMapping("/{id}/edit")
+    public ResponseEntity<PaymentResponse> editPayment(@PathVariable String id, @RequestBody EditPaymentRequestDTO body) {
+        return ResponseEntity.ok(paymentService.editPayment(id, body.paidAt(), body.amount(), currentUser()));
     }
 
     // Buscar pagamentos da escola, com filtros opcionais de mês, status (pendentes) e busca por aluno/responsável

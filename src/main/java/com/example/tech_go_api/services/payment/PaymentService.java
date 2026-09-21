@@ -68,7 +68,7 @@ public class PaymentService {
     }
 
     // Marcar pagamento como pago
-    public PaymentResponse markAsPaid(String paymentId, PaymentMethod paymentMethod, User user) {
+    public PaymentResponse markAsPaid(String paymentId, PaymentMethod paymentMethod, LocalDate paidAtOverride, User user) {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new NotFoundException("Pagamento não encontrado"));
 
@@ -76,11 +76,38 @@ public class PaymentService {
             throw new IllegalArgumentException("Este pagamento não pertence à sua escola.");
         }
 
-        LocalDate paidAt = LocalDate.now();
+        LocalDate paidAt = paidAtOverride != null ? paidAtOverride : LocalDate.now();
         payment.setStatus(true);
         payment.setPaidAt(paidAt);
         payment.setPaymentMethod(paymentMethod);
         payment.setAmount(paymentPricingService.calculateAmount(payment.getProfilePlayer().getPaymentPlan(), paidAt));
+        return toResponse(paymentRepository.save(payment));
+    }
+
+    // Editar um pagamento já quitado (data em que pagou e/ou valor)
+    public PaymentResponse editPayment(String paymentId, LocalDate paidAt, java.math.BigDecimal amount, User user) {
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new NotFoundException("Pagamento não encontrado"));
+
+        if (!payment.getProfilePlayer().getSchool().getId().equals(schoolOf(user).getId())) {
+            throw new IllegalArgumentException("Este pagamento não pertence à sua escola.");
+        }
+
+        if (!payment.isStatus()) {
+            throw new IllegalArgumentException("Só é possível editar pagamentos já quitados.");
+        }
+
+        if (paidAt != null) {
+            payment.setPaidAt(paidAt);
+            if (amount == null) {
+                payment.setAmount(paymentPricingService.calculateAmount(payment.getProfilePlayer().getPaymentPlan(), paidAt));
+            }
+        }
+
+        if (amount != null) {
+            payment.setAmount(amount);
+        }
+
         return toResponse(paymentRepository.save(payment));
     }
 
