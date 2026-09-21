@@ -47,18 +47,20 @@ public class ProfilePlayerController {
 	@GetMapping (path = "/findAll")
 	 public ResponseEntity<Page<ProfilePlayer>> findAllBySchool(
 			 @RequestParam(required = false) String search,
+			 @RequestParam(required = false) String turma,
 			 @PageableDefault(size = 10, sort = "firstname", direction = Sort.Direction.ASC) Pageable pageable) {
 		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		Page<ProfilePlayer> players = profilePlayerService.findAllBySchoolAndIsDeletFalse(user, search, pageable);
+		Page<ProfilePlayer> players = profilePlayerService.findAllBySchoolAndIsDeletFalse(user, search, turma, pageable);
 		return ResponseEntity.ok(players);
     }
 
 	@GetMapping (path = "/findAllInativos")
 	 public ResponseEntity<Page<ProfilePlayer>> findAllInativos(
 			 @RequestParam(required = false) String search,
+			 @RequestParam(required = false) String turma,
 			 @PageableDefault(size = 10, sort = "firstname", direction = Sort.Direction.ASC) Pageable pageable) {
 		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		Page<ProfilePlayer> players = profilePlayerService.findAllInactiveBySchool(user, search, pageable);
+		Page<ProfilePlayer> players = profilePlayerService.findAllInactiveBySchool(user, search, turma, pageable);
 		return ResponseEntity.ok(players);
     }
 

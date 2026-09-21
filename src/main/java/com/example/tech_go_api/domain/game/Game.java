@@ -7,6 +7,8 @@ import java.util.List;
 
 import com.example.tech_go_api.domain.game.GameCategory;
 import com.example.tech_go_api.domain.game.GameType;
+import com.example.tech_go_api.domain.school.School;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -15,6 +17,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -51,6 +55,11 @@ public class Game implements Serializable {
     private Integer awayScore;
 
     private String location;
+
+    @ManyToOne
+    @JoinColumn(name = "school_id")
+    @JsonBackReference
+    private School school;
 
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GamePlayerStats> players = new ArrayList<>();

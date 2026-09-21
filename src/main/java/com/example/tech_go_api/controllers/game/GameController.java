@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.tech_go_api.domain.game.GameCategory;
 import com.example.tech_go_api.domain.game.GameType;
+import com.example.tech_go_api.domain.users.base.User;
 import com.example.tech_go_api.dto.game.GameAttendanceEntryDTO;
 import com.example.tech_go_api.dto.game.GameCreateRequest;
 import com.example.tech_go_api.dto.game.GameResponse;
@@ -34,9 +36,13 @@ public class GameController {
 
     private final GameService gameService;
 
+    private User currentUser() {
+        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    }
+
     @PostMapping
     public ResponseEntity<GameResponse> create(@RequestBody @Valid GameCreateRequest request) {
-        return ResponseEntity.ok(gameService.create(request));
+        return ResponseEntity.ok(gameService.create(request, currentUser()));
     }
 
     @GetMapping
@@ -46,32 +52,32 @@ public class GameController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
-        return ResponseEntity.ok(gameService.findAll(type, category, startDate, endDate));
+        return ResponseEntity.ok(gameService.findAll(type, category, startDate, endDate, currentUser()));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<GameResponse> findById(@PathVariable String id) {
-        return ResponseEntity.ok(gameService.findById(id));
+        return ResponseEntity.ok(gameService.findById(id, currentUser()));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<GameResponse> update(@PathVariable String id, @RequestBody @Valid GameCreateRequest request) {
-        return ResponseEntity.ok(gameService.update(id, request));
+        return ResponseEntity.ok(gameService.update(id, request, currentUser()));
     }
 
     @PutMapping("/{id}/chamada")
     public ResponseEntity<GameResponse> updateAttendance(@PathVariable String id, @RequestBody List<GameAttendanceEntryDTO> entries) {
-        return ResponseEntity.ok(gameService.updateAttendance(id, entries));
+        return ResponseEntity.ok(gameService.updateAttendance(id, entries, currentUser()));
     }
 
     @GetMapping("/player/{playerId}")
     public ResponseEntity<List<GameResponse>> findByPlayer(@PathVariable String playerId) {
-        return ResponseEntity.ok(gameService.findByPlayer(playerId));
+        return ResponseEntity.ok(gameService.findByPlayer(playerId, currentUser()));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable String id) {
-        gameService.delete(id);
+        gameService.delete(id, currentUser());
         return ResponseEntity.noContent().build();
     }
 }

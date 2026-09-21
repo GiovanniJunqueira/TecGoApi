@@ -9,4 +9,5 @@ import com.example.tech_go_api.domain.school.School;
 
 public interface AulaGrupoRepository extends JpaRepository<AulaGrupo, String> {
     List<AulaGrupo> findBySchool(School school);
+    List<AulaGrupo> findByPlayers_Id(String playerId);
 }

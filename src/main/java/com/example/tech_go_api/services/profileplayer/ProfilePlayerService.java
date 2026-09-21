@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 
+import com.example.tech_go_api.domain.aula.AulaGrupo;
 import com.example.tech_go_api.domain.profileplayer.ProfilePlayer;
 import com.example.tech_go_api.domain.responsible.Responsible;
 import com.example.tech_go_api.domain.school.School;
@@ -23,6 +24,7 @@ import com.example.tech_go_api.dto.profileplayer.ProfilePlayerCreateRequestDTO;
 import com.example.tech_go_api.dto.profileplayer.ProfilePlayerSoftDeleteRequestDTO;
 import com.example.tech_go_api.exceptions.BusinessException;
 import com.example.tech_go_api.exceptions.NotFoundException;
+import com.example.tech_go_api.repositories.aula.AulaGrupoRepository;
 import com.example.tech_go_api.repositories.game.GamePlayerStatsRepository;
 import com.example.tech_go_api.repositories.payment.PaymentRepository;
 import com.example.tech_go_api.repositories.profileadmin.ProfileAdminRepository;
@@ -47,6 +49,7 @@ public class ProfilePlayerService {
 	private final PaymentRepository paymentRepository;
 	private final GamePlayerStatsRepository gamePlayerStatsRepository;
 	private final ResponsibleRepository responsibleRepository;
+	private final AulaGrupoRepository aulaGrupoRepository;
 
 	@Autowired
 	PaymentService paymentService;
@@ -87,20 +90,44 @@ public class ProfilePlayerService {
 	        profilePlayer.setIsDeleted(false);
 
 	        ProfilePlayer saved = profilePlayerRepository.save(profilePlayer);
-	        
+
+	        assignAulaGrupo(saved, dto.aulaGrupoId(), school);
+
 	        String currentMonth = String.format("%d-%02d", LocalDate.now().getYear(), LocalDate.now().getMonthValue());
 	        paymentService.createPayment(saved, currentMonth);
-	        
+
 	        return (saved.getId());
 	    }
+
+		 private void assignAulaGrupo(ProfilePlayer player, String aulaGrupoId, School school) {
+			 for (AulaGrupo grupo : aulaGrupoRepository.findByPlayers_Id(player.getId())) {
+				 if (grupo.getPlayers().removeIf(p -> p.getId().equals(player.getId()))) {
+					 aulaGrupoRepository.save(grupo);
+				 }
+			 }
+
+			 if (aulaGrupoId == null || aulaGrupoId.isBlank()) {
+				 return;
+			 }
+
+			 AulaGrupo grupo = aulaGrupoRepository.findById(aulaGrupoId)
+					 .orElseThrow(() -> new NotFoundException("Grupo de aula não encontrado"));
+
+			 if (!grupo.getSchool().getId().equals(school.getId())) {
+				 throw new IllegalArgumentException("Este grupo não pertence à sua escola.");
+			 }
+
+			 grupo.getPlayers().add(player);
+			 aulaGrupoRepository.save(grupo);
+		 }
 	 
 //	 @Cacheable(cacheNames = "getAllPlayers", key = "#schoolId")
-	 public Page<ProfilePlayer> findAllBySchoolAndIsDeletFalse(User user, String search, Pageable pageable){
+	 public Page<ProfilePlayer> findAllBySchoolAndIsDeletFalse(User user, String search, String turma, Pageable pageable){
 		 ProfileAdmin profileAdmin = profileAdminRepository.findById(user.getId())
 		 			.orElseThrow(()-> new NotFoundException("Usuário Admin não encontrado"));
 
 		 School school = profileAdmin.getSchool();
-		 return profilePlayerRepository.searchBySchoolAndIsDeleted(school, false, search, pageable);
+		 return profilePlayerRepository.searchBySchoolAndIsDeleted(school, false, search, turma, pageable);
 	 }
  
 	 
@@ -139,12 +166,12 @@ public class ProfilePlayerService {
 		 return profilePlayerRepository.save(profilePlayer);
 	 }
 
-	 public Page<ProfilePlayer> findAllInactiveBySchool(User user, String search, Pageable pageable) {
+	 public Page<ProfilePlayer> findAllInactiveBySchool(User user, String search, String turma, Pageable pageable) {
 		 ProfileAdmin profileAdmin = profileAdminRepository.findById(user.getId())
 		 			.orElseThrow(()-> new NotFoundException("Usuário Admin não encontrado"));
 
 		 School school = profileAdmin.getSchool();
-		 return profilePlayerRepository.searchBySchoolAndIsDeleted(school, true, search, pageable);
+		 return profilePlayerRepository.searchBySchoolAndIsDeleted(school, true, search, turma, pageable);
 	 }
 
 	 @Transactional
@@ -234,7 +261,11 @@ public class ProfilePlayerService {
 	 	 profilePlayer.setTurma(resolveTurma(dto.turma(), dto.birthDate()));
 	 	 profilePlayer.setPaymentPlan(dto.paymentPlan());
 
-	 	 return profilePlayerRepository.save(profilePlayer);
+	 	 ProfilePlayer saved = profilePlayerRepository.save(profilePlayer);
+
+	 	 assignAulaGrupo(saved, dto.aulaGrupoId(), school);
+
+	 	 return saved;
 	 }
 
 	 private String resolveTurma(String turmaFromDto, LocalDate birthDate) {
@@ -244,7 +275,7 @@ public class ProfilePlayerService {
 		 if (birthDate == null) {
 			 return null;
 		 }
-		 return String.format("Turma %02d", birthDate.getYear() % 100);
+		 return String.format("Nascidos %02d", birthDate.getYear() % 100);
 	 }
 
 }

@@ -45,6 +45,11 @@ public class AulaGrupoController {
         return ResponseEntity.ok(aulaGrupoService.findAll(currentUser()));
     }
 
+    @GetMapping("/by-player/{playerId}")
+    public ResponseEntity<List<AulaGrupoResponseDTO>> findByPlayer(@PathVariable String playerId) {
+        return ResponseEntity.ok(aulaGrupoService.findByPlayer(playerId));
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<AulaGrupoResponseDTO> update(@PathVariable String id, @RequestBody @Valid AulaGrupoCreateRequestDTO dto) {
         return ResponseEntity.ok(aulaGrupoService.update(id, dto, currentUser()));

@@ -55,6 +55,12 @@ public class AulaGrupoService {
                 .collect(Collectors.toList());
     }
 
+    public List<AulaGrupoResponseDTO> findByPlayer(String playerId) {
+        return aulaGrupoRepository.findByPlayers_Id(playerId).stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
     public AulaGrupoResponseDTO update(String id, AulaGrupoCreateRequestDTO dto, User user) {
         AulaGrupo grupo = findOwnedGrupo(id, user);
 

@@ -29,7 +29,8 @@ public record ProfilePlayerCreateRequestDTO(
 		 String origin,
 		 String registrationId,
 		 String turma,
-		 PaymentPlan paymentPlan
+		 PaymentPlan paymentPlan,
+		 String aulaGrupoId
 		) {
 	
 }

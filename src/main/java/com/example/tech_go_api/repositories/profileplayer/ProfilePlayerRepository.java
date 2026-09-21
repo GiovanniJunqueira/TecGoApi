@@ -16,15 +16,18 @@ public interface ProfilePlayerRepository extends JpaRepository<ProfilePlayer, St
 
 	List<ProfilePlayer> findBySchoolAndIsDeletedFalse(School school);
 	List<ProfilePlayer> findByIsDeletedTrueAndInactiveSinceBefore(LocalDate cutoff);
+	long countBySchoolAndIsDeletedFalse(School school);
 
 	@Query("SELECT p FROM ProfilePlayer p WHERE p.school = :school AND p.isDeleted = :isDeleted AND ("
 			+ ":search IS NULL OR :search = '' "
 			+ "OR LOWER(p.firstname) LIKE LOWER(CONCAT('%', :search, '%')) "
 			+ "OR LOWER(p.lastname) LIKE LOWER(CONCAT('%', :search, '%')) "
-			+ "OR LOWER(p.registrationId) LIKE LOWER(CONCAT('%', :search, '%')))")
+			+ "OR LOWER(p.registrationId) LIKE LOWER(CONCAT('%', :search, '%'))) "
+			+ "AND (:turma IS NULL OR :turma = '' OR LOWER(p.turma) LIKE LOWER(CONCAT('%', :turma, '%')))")
 	Page<ProfilePlayer> searchBySchoolAndIsDeleted(
 			@Param("school") School school,
 			@Param("isDeleted") boolean isDeleted,
 			@Param("search") String search,
+			@Param("turma") String turma,
 			Pageable pageable);
 }

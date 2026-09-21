@@ -13,6 +13,9 @@ import com.example.tech_go_api.domain.game.GameCategory;
 import com.example.tech_go_api.domain.game.GamePlayerStats;
 import com.example.tech_go_api.domain.game.GameType;
 import com.example.tech_go_api.domain.profileplayer.ProfilePlayer;
+import com.example.tech_go_api.domain.school.School;
+import com.example.tech_go_api.domain.users.base.User;
+import com.example.tech_go_api.domain.users.profileadmin.ProfileAdmin;
 import com.example.tech_go_api.dto.game.GameAttendanceEntryDTO;
 import com.example.tech_go_api.dto.game.GameCreateRequest;
 import com.example.tech_go_api.dto.game.GamePlayerStatsRequest;
@@ -21,6 +24,7 @@ import com.example.tech_go_api.dto.game.GameResponse;
 import com.example.tech_go_api.exceptions.NotFoundException;
 import com.example.tech_go_api.repositories.game.GamePlayerStatsRepository;
 import com.example.tech_go_api.repositories.game.GameRepository;
+import com.example.tech_go_api.repositories.profileadmin.ProfileAdminRepository;
 import com.example.tech_go_api.repositories.profileplayer.ProfilePlayerRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -32,8 +36,15 @@ public class GameService {
     private final GameRepository gameRepository;
     private final GamePlayerStatsRepository gamePlayerStatsRepository;
     private final ProfilePlayerRepository profilePlayerRepository;
+    private final ProfileAdminRepository profileAdminRepository;
 
-    public GameResponse create(GameCreateRequest request) {
+    private School schoolOf(User user) {
+        ProfileAdmin profileAdmin = profileAdminRepository.findById(user.getId())
+                .orElseThrow(() -> new NotFoundException("Usuário Admin não encontrado"));
+        return profileAdmin.getSchool();
+    }
+
+    public GameResponse create(GameCreateRequest request, User user) {
         Game game = new Game();
         game.setType(request.type());
         game.setCategory(request.category());
@@ -42,6 +53,7 @@ public class GameService {
         game.setHomeScore(request.homeScore());
         game.setAwayScore(request.awayScore());
         game.setLocation(request.location());
+        game.setSchool(schoolOf(user));
 
         Game savedGame = gameRepository.save(game);
 
@@ -59,9 +71,8 @@ public class GameService {
     }
 
     @Transactional
-    public GameResponse update(String id, GameCreateRequest request) {
-        Game game = gameRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Jogo não encontrado"));
+    public GameResponse update(String id, GameCreateRequest request, User user) {
+        Game game = findOwnedGame(id, user);
 
         game.setType(request.type());
         game.setCategory(request.category());
@@ -120,9 +131,8 @@ public class GameService {
     }
 
     @Transactional
-    public GameResponse updateAttendance(String gameId, List<GameAttendanceEntryDTO> entries) {
-        Game game = gameRepository.findById(gameId)
-                .orElseThrow(() -> new NotFoundException("Jogo não encontrado"));
+    public GameResponse updateAttendance(String gameId, List<GameAttendanceEntryDTO> entries, User user) {
+        Game game = findOwnedGame(gameId, user);
 
         Map<String, Boolean> attendedByPlayerId = entries.stream()
                 .collect(Collectors.toMap(GameAttendanceEntryDTO::playerId, GameAttendanceEntryDTO::attended, (a, b) -> b));
@@ -142,22 +152,8 @@ public class GameService {
         return new GameResponse(saved, playerResponses);
     }
 
-    public List<GameResponse> findAll(GameType type, GameCategory category, LocalDate startDate, LocalDate endDate) {
-        List<Game> games;
-
-        if (type != null && category != null && startDate != null && endDate != null) {
-            games = gameRepository.findByTypeAndCategoryAndDateBetween(type, category, startDate, endDate);
-        } else if (type != null && category != null) {
-            games = gameRepository.findByTypeAndCategory(type, category);
-        } else if (type != null) {
-            games = gameRepository.findByType(type);
-        } else if (category != null) {
-            games = gameRepository.findByCategory(category);
-        } else if (startDate != null && endDate != null) {
-            games = gameRepository.findByDateBetween(startDate, endDate);
-        } else {
-            games = gameRepository.findAll();
-        }
+    public List<GameResponse> findAll(GameType type, GameCategory category, LocalDate startDate, LocalDate endDate, User user) {
+        List<Game> games = gameRepository.search(schoolOf(user), type, category, startDate, endDate);
 
         return games.stream()
                 .map(g -> new GameResponse(g,
@@ -167,9 +163,8 @@ public class GameService {
                 .collect(Collectors.toList());
     }
 
-    public GameResponse findById(String id) {
-        Game game = gameRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Jogo não encontrado"));
+    public GameResponse findById(String id, User user) {
+        Game game = findOwnedGame(id, user);
 
         List<GamePlayerStatsResponse> stats = game.getPlayers() != null
                 ? game.getPlayers().stream().map(this::toStatsResponse).collect(Collectors.toList())
@@ -178,9 +173,11 @@ public class GameService {
         return new GameResponse(game, stats);
     }
 
-    public List<GameResponse> findByPlayer(String playerId) {
+    public List<GameResponse> findByPlayer(String playerId, User user) {
+        School school = schoolOf(user);
         return gamePlayerStatsRepository.findByPlayerId(playerId).stream()
                 .map(GamePlayerStats::getGame)
+                .filter(g -> g.getSchool() != null && g.getSchool().getId().equals(school.getId()))
                 .distinct()
                 .map(g -> new GameResponse(g,
                         g.getPlayers() != null ? g.getPlayers().stream()
@@ -189,7 +186,19 @@ public class GameService {
                 .collect(Collectors.toList());
     }
 
-    public void delete(String id) {
+    private Game findOwnedGame(String id, User user) {
+        Game game = gameRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Jogo não encontrado"));
+
+        if (game.getSchool() == null || !game.getSchool().getId().equals(schoolOf(user).getId())) {
+            throw new IllegalArgumentException("Este jogo não pertence à sua escola.");
+        }
+
+        return game;
+    }
+
+    public void delete(String id, User user) {
+        findOwnedGame(id, user);
         gameRepository.deleteById(id);
     }
 }
