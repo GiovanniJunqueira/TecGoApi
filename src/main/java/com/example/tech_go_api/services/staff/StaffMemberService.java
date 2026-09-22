@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.tech_go_api.domain.school.School;
 import com.example.tech_go_api.domain.staff.StaffMember;
@@ -100,6 +101,7 @@ public class StaffMemberService {
         return toResponse(staffMemberRepository.save(staff));
     }
 
+    @Transactional
     public void delete(String id, User user) {
         StaffMember staff = findOwnedStaff(id, user);
         refreshTokenRepository.deleteByUser(staff);
