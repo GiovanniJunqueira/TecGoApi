@@ -17,9 +17,9 @@ import com.example.tech_go_api.domain.aula.AulaGrupo;
 import com.example.tech_go_api.domain.profileplayer.ProfilePlayer;
 import com.example.tech_go_api.domain.responsible.Responsible;
 import com.example.tech_go_api.domain.school.School;
+import com.example.tech_go_api.domain.staff.Permission;
 import com.example.tech_go_api.domain.users.Role;
 import com.example.tech_go_api.domain.users.base.User;
-import com.example.tech_go_api.domain.users.profileadmin.ProfileAdmin;
 import com.example.tech_go_api.dto.profileplayer.ProfilePlayerCreateRequestDTO;
 import com.example.tech_go_api.dto.profileplayer.ProfilePlayerSoftDeleteRequestDTO;
 import com.example.tech_go_api.exceptions.BusinessException;
@@ -28,11 +28,12 @@ import com.example.tech_go_api.repositories.aula.AulaGrupoRepository;
 import com.example.tech_go_api.repositories.aula.AulaPresencaRepository;
 import com.example.tech_go_api.repositories.game.GamePlayerStatsRepository;
 import com.example.tech_go_api.repositories.payment.PaymentRepository;
-import com.example.tech_go_api.repositories.profileadmin.ProfileAdminRepository;
 import com.example.tech_go_api.repositories.profileplayer.ProfilePlayerRepository;
 import com.example.tech_go_api.repositories.responsible.ResponsibleRepository;
 import com.example.tech_go_api.repositories.school.SchoolRepository;
 import com.example.tech_go_api.services.payment.PaymentService;
+import com.example.tech_go_api.services.school.SchoolResolverService;
+import com.example.tech_go_api.services.staff.PermissionService;
 
 
 import lombok.RequiredArgsConstructor;
@@ -45,24 +46,22 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProfilePlayerService {
 
 	private final ProfilePlayerRepository profilePlayerRepository;
-	private final ProfileAdminRepository profileAdminRepository;
 	private final SchoolRepository schoolRepository;
 	private final PaymentRepository paymentRepository;
 	private final GamePlayerStatsRepository gamePlayerStatsRepository;
 	private final ResponsibleRepository responsibleRepository;
 	private final AulaGrupoRepository aulaGrupoRepository;
 	private final AulaPresencaRepository aulaPresencaRepository;
+	private final SchoolResolverService schoolResolverService;
+	private final PermissionService permissionService;
 
 	@Autowired
 	PaymentService paymentService;
 
 	 public String createProfilePlayer(ProfilePlayerCreateRequestDTO dto, User user) {
-		 
-		 	ProfileAdmin profileAdmin = profileAdminRepository.findById(user.getId())
-		 			.orElseThrow(()-> new NotFoundException("Usuário Admin não encontrado"));
-		 	
-		 	School school = profileAdmin.getSchool();
-	         
+		 permissionService.requirePermission(user, Permission.ATLETAS_MATRICULAR);
+		 School school = schoolResolverService.schoolOf(user);
+
 	        ProfilePlayer profilePlayer = new ProfilePlayer();
 	        profilePlayer.setRole(Role.PLAYER);
 	        profilePlayer.setFirstname(dto.firstname());
@@ -122,21 +121,18 @@ public class ProfilePlayerService {
 			 grupo.getPlayers().add(player);
 			 aulaGrupoRepository.save(grupo);
 		 }
-	 
+
 //	 @Cacheable(cacheNames = "getAllPlayers", key = "#schoolId")
 	 public Page<ProfilePlayer> findAllBySchoolAndIsDeletFalse(User user, String search, String turma, Pageable pageable){
-		 ProfileAdmin profileAdmin = profileAdminRepository.findById(user.getId())
-		 			.orElseThrow(()-> new NotFoundException("Usuário Admin não encontrado"));
-
-		 School school = profileAdmin.getSchool();
+		 permissionService.requirePermission(user, Permission.ATLETAS_VER);
+		 School school = schoolResolverService.schoolOf(user);
 		 return profilePlayerRepository.searchBySchoolAndIsDeleted(school, false, search, turma, pageable);
 	 }
- 
-	 
+
+
 	 public ResponseEntity<String> softDeleteProfilePlayer(String id, User user){
-		 ProfileAdmin profileAdmin = profileAdminRepository.findById(user.getId())
-		 			.orElseThrow(()-> new NotFoundException("Usuário Admin não encontrado"));
-		 School school = profileAdmin.getSchool();
+		 permissionService.requirePermission(user, Permission.ATLETAS_INATIVAR);
+		 School school = schoolResolverService.schoolOf(user);
 
 		 ProfilePlayer profilePlayer = profilePlayerRepository.findById(id)
 		            .orElseThrow(() -> new NotFoundException("Aluno não encontrado"));
@@ -152,9 +148,8 @@ public class ProfilePlayerService {
 	 }
 
 	 public ProfilePlayer reactivateProfilePlayer(String id, User user) {
-		 ProfileAdmin profileAdmin = profileAdminRepository.findById(user.getId())
-		 			.orElseThrow(()-> new NotFoundException("Usuário Admin não encontrado"));
-		 School school = profileAdmin.getSchool();
+		 permissionService.requirePermission(user, Permission.ATLETAS_REATIVAR);
+		 School school = schoolResolverService.schoolOf(user);
 
 		 ProfilePlayer profilePlayer = profilePlayerRepository.findById(id)
 		            .orElseThrow(() -> new NotFoundException("Aluno não encontrado"));
@@ -169,18 +164,15 @@ public class ProfilePlayerService {
 	 }
 
 	 public Page<ProfilePlayer> findAllInactiveBySchool(User user, String search, String turma, Pageable pageable) {
-		 ProfileAdmin profileAdmin = profileAdminRepository.findById(user.getId())
-		 			.orElseThrow(()-> new NotFoundException("Usuário Admin não encontrado"));
-
-		 School school = profileAdmin.getSchool();
+		 permissionService.requirePermission(user, Permission.ATLETAS_VER);
+		 School school = schoolResolverService.schoolOf(user);
 		 return profilePlayerRepository.searchBySchoolAndIsDeleted(school, true, search, turma, pageable);
 	 }
 
 	 @Transactional
 	 public void hardDeleteProfilePlayer(String id, User user) {
-		 ProfileAdmin profileAdmin = profileAdminRepository.findById(user.getId())
-		 			.orElseThrow(()-> new NotFoundException("Usuário Admin não encontrado"));
-		 School school = profileAdmin.getSchool();
+		 permissionService.requirePermission(user, Permission.ATLETAS_EXCLUIR_PERMANENTE);
+		 School school = schoolResolverService.schoolOf(user);
 
 		 ProfilePlayer profilePlayer = profilePlayerRepository.findById(id)
 		            .orElseThrow(() -> new NotFoundException("Aluno não encontrado"));
@@ -220,32 +212,30 @@ public class ProfilePlayerService {
 	 }
 
 	 public ProfilePlayer getById(String id, User user){
-		 ProfileAdmin profileAdmin = profileAdminRepository.findById(user.getId())
-		 			.orElseThrow(()-> new NotFoundException("Usuário Admin não encontrado"));
-		 School school = profileAdmin.getSchool();
-		 
+		 permissionService.requirePermission(user, Permission.ATLETAS_VER);
+		 School school = schoolResolverService.schoolOf(user);
+
 		 ProfilePlayer profilePlayer = profilePlayerRepository.findById(id)
 		            .orElseThrow(() -> new NotFoundException("Aluno não encontrado"));
-		 
+
 		 if (!profilePlayer.getSchool().getId().equals(school.getId())) {
 		        throw new IllegalArgumentException("Este aluno não pertence à sua escola.");
 		    }
-		 	 
+
 		 return profilePlayer;
 	 }
-	 
+
 	 public ProfilePlayer updateProfilePlayer(String id, ProfilePlayerCreateRequestDTO dto, User user) {
-	 	 ProfileAdmin profileAdmin = profileAdminRepository.findById(user.getId())
-	 	     	.orElseThrow(() -> new NotFoundException("Usuário Admin não encontrado"));
-	 	 School school = profileAdmin.getSchool();
-	 	
+	 	 permissionService.requirePermission(user, Permission.ATLETAS_EDITAR);
+	 	 School school = schoolResolverService.schoolOf(user);
+
 	 	 ProfilePlayer profilePlayer = profilePlayerRepository.findById(id)
 	 	     	.orElseThrow(() -> new NotFoundException("Aluno não encontrado"));
-	 	
+
 	 	 if (!profilePlayer.getSchool().getId().equals(school.getId())) {
 	 	     throw new IllegalArgumentException("Este aluno não pertence à sua escola.");
 	 	 }
-	 	
+
 	 	 profilePlayer.setFirstname(dto.firstname());
 	 	 profilePlayer.setLastname(dto.lastname());
 	 	 profilePlayer.setBirthDate(dto.birthDate());
@@ -279,9 +269,8 @@ public class ProfilePlayerService {
 
 	 public List<com.example.tech_go_api.dto.profileplayer.PlayerReportResponseDTO> generateReport(
 			 User user, String status, String turma, String aulaGrupoId) {
-		 ProfileAdmin profileAdmin = profileAdminRepository.findById(user.getId())
-		 			.orElseThrow(()-> new NotFoundException("Usuário Admin não encontrado"));
-		 School school = profileAdmin.getSchool();
+		 permissionService.requirePermission(user, Permission.ATLETAS_IMPRIMIR);
+		 School school = schoolResolverService.schoolOf(user);
 
 		 Boolean isDeleted;
 		 if ("ATIVOS".equalsIgnoreCase(status)) {

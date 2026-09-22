@@ -7,14 +7,15 @@ import com.example.tech_go_api.domain.payment.PaymentMethod;
 import com.example.tech_go_api.domain.profileplayer.ProfilePlayer;
 import com.example.tech_go_api.domain.responsible.Responsible;
 import com.example.tech_go_api.domain.school.School;
+import com.example.tech_go_api.domain.staff.Permission;
 import com.example.tech_go_api.domain.users.base.User;
-import com.example.tech_go_api.domain.users.profileadmin.ProfileAdmin;
 import com.example.tech_go_api.dto.payment.PaymentResponse;
 import com.example.tech_go_api.exceptions.NotFoundException;
 import com.example.tech_go_api.repositories.payment.PaymentRepository;
-import com.example.tech_go_api.repositories.profileadmin.ProfileAdminRepository;
 import com.example.tech_go_api.repositories.profileplayer.ProfilePlayerRepository;
 import com.example.tech_go_api.repositories.responsible.ResponsibleRepository;
+import com.example.tech_go_api.services.school.SchoolResolverService;
+import com.example.tech_go_api.services.staff.PermissionService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import java.time.LocalDate;
@@ -28,9 +29,6 @@ public class PaymentService {
     private PaymentRepository paymentRepository;
 
     @Autowired
-    private ProfileAdminRepository profileAdminRepository;
-
-    @Autowired
     private ProfilePlayerRepository profilePlayerRepository;
 
     @Autowired
@@ -39,10 +37,14 @@ public class PaymentService {
     @Autowired
     private PaymentPricingService paymentPricingService;
 
+    @Autowired
+    private SchoolResolverService schoolResolverService;
+
+    @Autowired
+    private PermissionService permissionService;
+
     private School schoolOf(User user) {
-        ProfileAdmin profileAdmin = profileAdminRepository.findById(user.getId())
-                .orElseThrow(() -> new NotFoundException("Usuário Admin não encontrado"));
-        return profileAdmin.getSchool();
+        return schoolResolverService.schoolOf(user);
     }
 
     // Criar pagamento para um aluno em um mês
@@ -57,6 +59,7 @@ public class PaymentService {
 
     // Criar pagamento a partir do ID do aluno, validando que ele pertence à escola do admin logado
     public PaymentResponse createPaymentForPlayer(String playerId, String month, User user) {
+        permissionService.requirePermission(user, Permission.PAGAMENTOS_LANCAR);
         ProfilePlayer player = profilePlayerRepository.findById(playerId)
                 .orElseThrow(() -> new NotFoundException("Aluno não encontrado"));
 
@@ -69,6 +72,7 @@ public class PaymentService {
 
     // Marcar pagamento como pago
     public PaymentResponse markAsPaid(String paymentId, PaymentMethod paymentMethod, LocalDate paidAtOverride, User user) {
+        permissionService.requirePermission(user, Permission.PAGAMENTOS_DAR_BAIXA);
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new NotFoundException("Pagamento não encontrado"));
 
@@ -86,6 +90,7 @@ public class PaymentService {
 
     // Editar um pagamento já quitado (data em que pagou, valor e/ou forma de pagamento)
     public PaymentResponse editPayment(String paymentId, LocalDate paidAt, java.math.BigDecimal amount, PaymentMethod paymentMethod, User user) {
+        permissionService.requirePermission(user, Permission.PAGAMENTOS_EDITAR);
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new NotFoundException("Pagamento não encontrado"));
 
@@ -117,6 +122,7 @@ public class PaymentService {
 
     // Reverter um pagamento já quitado de volta para pendente
     public PaymentResponse markAsPending(String paymentId, User user) {
+        permissionService.requirePermission(user, Permission.PAGAMENTOS_MARCAR_PENDENTE);
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new NotFoundException("Pagamento não encontrado"));
 
@@ -134,6 +140,7 @@ public class PaymentService {
 
     // Buscar pagamentos da escola, com filtros opcionais de mês, status (true=pago, false=pendente, null=todos) e busca (aluno/responsável)
     public List<PaymentResponse> search(User user, String month, Boolean status, String search) {
+        permissionService.requirePermission(user, Permission.PAGAMENTOS_VER);
         boolean hasStatus = status != null;
         boolean statusValue = Boolean.TRUE.equals(status);
         return paymentRepository.search(schoolOf(user), month, hasStatus, statusValue, search).stream()
@@ -143,6 +150,7 @@ public class PaymentService {
 
     // Buscar pagamentos de um aluno
     public List<PaymentResponse> getPaymentsByPlayer(String playerId, User user) {
+        permissionService.requirePermission(user, Permission.PAGAMENTOS_VER);
         ProfilePlayer player = profilePlayerRepository.findById(playerId)
                 .orElseThrow(() -> new NotFoundException("Aluno não encontrado"));
 
@@ -157,6 +165,7 @@ public class PaymentService {
 
     // Deletar pagamento
     public void deletePayment(String paymentId, User user) {
+        permissionService.requirePermission(user, Permission.PAGAMENTOS_EXCLUIR);
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new NotFoundException("Pagamento não encontrado"));
 

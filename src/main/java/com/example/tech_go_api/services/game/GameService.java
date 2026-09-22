@@ -14,8 +14,8 @@ import com.example.tech_go_api.domain.game.GamePlayerStats;
 import com.example.tech_go_api.domain.game.GameType;
 import com.example.tech_go_api.domain.profileplayer.ProfilePlayer;
 import com.example.tech_go_api.domain.school.School;
+import com.example.tech_go_api.domain.staff.Permission;
 import com.example.tech_go_api.domain.users.base.User;
-import com.example.tech_go_api.domain.users.profileadmin.ProfileAdmin;
 import com.example.tech_go_api.dto.game.GameAttendanceEntryDTO;
 import com.example.tech_go_api.dto.game.GameCreateRequest;
 import com.example.tech_go_api.dto.game.GamePlayerStatsRequest;
@@ -24,8 +24,9 @@ import com.example.tech_go_api.dto.game.GameResponse;
 import com.example.tech_go_api.exceptions.NotFoundException;
 import com.example.tech_go_api.repositories.game.GamePlayerStatsRepository;
 import com.example.tech_go_api.repositories.game.GameRepository;
-import com.example.tech_go_api.repositories.profileadmin.ProfileAdminRepository;
 import com.example.tech_go_api.repositories.profileplayer.ProfilePlayerRepository;
+import com.example.tech_go_api.services.school.SchoolResolverService;
+import com.example.tech_go_api.services.staff.PermissionService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -36,15 +37,15 @@ public class GameService {
     private final GameRepository gameRepository;
     private final GamePlayerStatsRepository gamePlayerStatsRepository;
     private final ProfilePlayerRepository profilePlayerRepository;
-    private final ProfileAdminRepository profileAdminRepository;
+    private final SchoolResolverService schoolResolverService;
+    private final PermissionService permissionService;
 
     private School schoolOf(User user) {
-        ProfileAdmin profileAdmin = profileAdminRepository.findById(user.getId())
-                .orElseThrow(() -> new NotFoundException("Usuário Admin não encontrado"));
-        return profileAdmin.getSchool();
+        return schoolResolverService.schoolOf(user);
     }
 
     public GameResponse create(GameCreateRequest request, User user) {
+        permissionService.requirePermission(user, Permission.JOGOS_CRIAR);
         Game game = new Game();
         game.setType(request.type());
         game.setCategory(request.category());
@@ -72,6 +73,7 @@ public class GameService {
 
     @Transactional
     public GameResponse update(String id, GameCreateRequest request, User user) {
+        permissionService.requirePermission(user, Permission.JOGOS_EDITAR);
         Game game = findOwnedGame(id, user);
 
         game.setType(request.type());
@@ -132,6 +134,7 @@ public class GameService {
 
     @Transactional
     public GameResponse updateAttendance(String gameId, List<GameAttendanceEntryDTO> entries, User user) {
+        permissionService.requirePermission(user, Permission.JOGOS_FAZER_CHAMADA);
         Game game = findOwnedGame(gameId, user);
 
         Map<String, Boolean> attendedByPlayerId = entries.stream()
@@ -153,6 +156,7 @@ public class GameService {
     }
 
     public List<GameResponse> findAll(GameType type, GameCategory category, LocalDate startDate, LocalDate endDate, User user) {
+        permissionService.requirePermission(user, Permission.JOGOS_VER);
         List<Game> games = gameRepository.search(schoolOf(user), type, category, startDate, endDate);
 
         return games.stream()
@@ -164,6 +168,7 @@ public class GameService {
     }
 
     public GameResponse findById(String id, User user) {
+        permissionService.requirePermission(user, Permission.JOGOS_VER);
         Game game = findOwnedGame(id, user);
 
         List<GamePlayerStatsResponse> stats = game.getPlayers() != null
@@ -174,6 +179,7 @@ public class GameService {
     }
 
     public List<GameResponse> findByPlayer(String playerId, User user) {
+        permissionService.requirePermission(user, Permission.JOGOS_VER);
         School school = schoolOf(user);
         return gamePlayerStatsRepository.findByPlayerId(playerId).stream()
                 .map(GamePlayerStats::getGame)
@@ -198,6 +204,7 @@ public class GameService {
     }
 
     public void delete(String id, User user) {
+        permissionService.requirePermission(user, Permission.JOGOS_EXCLUIR);
         findOwnedGame(id, user);
         gameRepository.deleteById(id);
     }

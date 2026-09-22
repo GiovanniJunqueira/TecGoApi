@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.example.tech_go_api.domain.profileplayer.ProfilePlayer;
+import com.example.tech_go_api.domain.school.School;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -13,6 +15,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -46,6 +49,11 @@ public class Responsible implements Serializable {
     private String addressNeighborhood;
     private String addressComplement;
     private String postcode;
+
+    @ManyToOne
+    @JoinColumn(name = "school_id")
+    @JsonBackReference
+    private School school;
 
     @ManyToMany
     @JoinTable(

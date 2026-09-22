@@ -47,7 +47,7 @@ public class AulaGrupoController {
 
     @GetMapping("/by-player/{playerId}")
     public ResponseEntity<List<AulaGrupoResponseDTO>> findByPlayer(@PathVariable String playerId) {
-        return ResponseEntity.ok(aulaGrupoService.findByPlayer(playerId));
+        return ResponseEntity.ok(aulaGrupoService.findByPlayer(playerId, currentUser()));
     }
 
     @PutMapping("/{id}")

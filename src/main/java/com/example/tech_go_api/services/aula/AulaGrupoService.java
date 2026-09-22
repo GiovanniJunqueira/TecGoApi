@@ -8,16 +8,17 @@ import org.springframework.stereotype.Service;
 import com.example.tech_go_api.domain.aula.AulaGrupo;
 import com.example.tech_go_api.domain.profileplayer.ProfilePlayer;
 import com.example.tech_go_api.domain.school.School;
+import com.example.tech_go_api.domain.staff.Permission;
 import com.example.tech_go_api.domain.users.base.User;
-import com.example.tech_go_api.domain.users.profileadmin.ProfileAdmin;
 import com.example.tech_go_api.dto.aula.AulaGrupoCreateRequestDTO;
 import com.example.tech_go_api.dto.aula.AulaGrupoResponseDTO;
 import com.example.tech_go_api.dto.aula.AulaPlayerSummaryDTO;
 import com.example.tech_go_api.exceptions.NotFoundException;
 import com.example.tech_go_api.repositories.aula.AulaGrupoRepository;
 import com.example.tech_go_api.repositories.aula.AulaSessaoRepository;
-import com.example.tech_go_api.repositories.profileadmin.ProfileAdminRepository;
 import com.example.tech_go_api.repositories.profileplayer.ProfilePlayerRepository;
+import com.example.tech_go_api.services.school.SchoolResolverService;
+import com.example.tech_go_api.services.staff.PermissionService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -27,16 +28,16 @@ public class AulaGrupoService {
 
     private final AulaGrupoRepository aulaGrupoRepository;
     private final AulaSessaoRepository aulaSessaoRepository;
-    private final ProfileAdminRepository profileAdminRepository;
     private final ProfilePlayerRepository profilePlayerRepository;
+    private final SchoolResolverService schoolResolverService;
+    private final PermissionService permissionService;
 
     private School schoolOf(User user) {
-        ProfileAdmin profileAdmin = profileAdminRepository.findById(user.getId())
-                .orElseThrow(() -> new NotFoundException("Usuário Admin não encontrado"));
-        return profileAdmin.getSchool();
+        return schoolResolverService.schoolOf(user);
     }
 
     public AulaGrupoResponseDTO create(AulaGrupoCreateRequestDTO dto, User user) {
+        permissionService.requirePermission(user, Permission.AULAS_CRIAR_GRUPO);
         AulaGrupo grupo = new AulaGrupo();
         grupo.setName(dto.name());
         grupo.setSchool(schoolOf(user));
@@ -50,18 +51,23 @@ public class AulaGrupoService {
     }
 
     public List<AulaGrupoResponseDTO> findAll(User user) {
+        permissionService.requirePermission(user, Permission.AULAS_VER_GRUPOS);
         return aulaGrupoRepository.findBySchool(schoolOf(user)).stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
 
-    public List<AulaGrupoResponseDTO> findByPlayer(String playerId) {
+    public List<AulaGrupoResponseDTO> findByPlayer(String playerId, User user) {
+        permissionService.requirePermission(user, Permission.AULAS_VER_GRUPOS);
+        School school = schoolOf(user);
         return aulaGrupoRepository.findByPlayers_Id(playerId).stream()
+                .filter(g -> g.getSchool() != null && g.getSchool().getId().equals(school.getId()))
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
 
     public AulaGrupoResponseDTO update(String id, AulaGrupoCreateRequestDTO dto, User user) {
+        permissionService.requirePermission(user, Permission.AULAS_EDITAR_GRUPO);
         AulaGrupo grupo = findOwnedGrupo(id, user);
 
         grupo.setName(dto.name());
@@ -73,6 +79,7 @@ public class AulaGrupoService {
     }
 
     public void delete(String id, User user) {
+        permissionService.requirePermission(user, Permission.AULAS_EXCLUIR_GRUPO);
         AulaGrupo grupo = findOwnedGrupo(id, user);
         aulaSessaoRepository.deleteAll(aulaSessaoRepository.findByGrupoOrderByDateDesc(grupo));
         aulaGrupoRepository.delete(grupo);
