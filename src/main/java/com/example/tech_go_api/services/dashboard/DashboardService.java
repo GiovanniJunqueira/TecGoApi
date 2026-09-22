@@ -43,7 +43,7 @@ public class DashboardService {
         long totalGames = gameRepository.countBySchoolAndDateBetween(
                 school, yearMonth.atDay(1), yearMonth.atEndOfMonth());
 
-        List<Payment> allThisMonth = paymentRepository.search(school, monthKey, null, null);
+        List<Payment> allThisMonth = paymentRepository.search(school, monthKey, false, false, null);
         long totalPaymentsThisMonth = allThisMonth.size();
         long totalPaymentsPaidThisMonth = allThisMonth.stream().filter(Payment::isStatus).count();
         long totalPaymentsPendingThisMonth = totalPaymentsThisMonth - totalPaymentsPaidThisMonth;

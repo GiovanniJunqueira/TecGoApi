@@ -53,13 +53,13 @@ public class PaymentController {
         return ResponseEntity.ok(paymentService.markAsPending(id, currentUser()));
     }
 
-    // Buscar pagamentos da escola, com filtros opcionais de mês, status (pendentes) e busca por aluno/responsável
+    // Buscar pagamentos da escola, com filtros opcionais de mês, status (true=pago, false=pendente, vazio=todos) e busca por aluno/responsável
     @GetMapping
     public ResponseEntity<List<PaymentResponse>> search(
             @RequestParam(required = false) String month,
-            @RequestParam(required = false) Boolean pending,
+            @RequestParam(required = false) Boolean status,
             @RequestParam(required = false) String search) {
-        return ResponseEntity.ok(paymentService.search(currentUser(), month, pending, search));
+        return ResponseEntity.ok(paymentService.search(currentUser(), month, status, search));
     }
 
     // Buscar pagamentos de um aluno

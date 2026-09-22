@@ -18,7 +18,7 @@ public interface PaymentRepository extends JpaRepository<Payment, String> {
 
     @Query("SELECT p FROM Payment p WHERE p.profilePlayer.school = :school "
             + "AND (:month IS NULL OR :month = '' OR p.month = :month) "
-            + "AND (:status IS NULL OR p.status = :status) "
+            + "AND (:hasStatus = false OR p.status = :status) "
             + "AND (:search IS NULL OR :search = '' "
             + "     OR LOWER(p.profilePlayer.firstname) LIKE LOWER(CONCAT('%', :search, '%')) "
             + "     OR LOWER(p.profilePlayer.lastname) LIKE LOWER(CONCAT('%', :search, '%')) "
@@ -28,7 +28,8 @@ public interface PaymentRepository extends JpaRepository<Payment, String> {
     List<Payment> search(
             @Param("school") School school,
             @Param("month") String month,
-            @Param("status") Boolean status,
+            @Param("hasStatus") boolean hasStatus,
+            @Param("status") boolean status,
             @Param("search") String search);
 }
 

@@ -132,10 +132,11 @@ public class PaymentService {
         return toResponse(paymentRepository.save(payment));
     }
 
-    // Buscar pagamentos da escola, com filtros opcionais de mês, status e busca (aluno/responsável)
-    public List<PaymentResponse> search(User user, String month, Boolean pending, String search) {
-        Boolean status = Boolean.TRUE.equals(pending) ? Boolean.FALSE : null;
-        return paymentRepository.search(schoolOf(user), month, status, search).stream()
+    // Buscar pagamentos da escola, com filtros opcionais de mês, status (true=pago, false=pendente, null=todos) e busca (aluno/responsável)
+    public List<PaymentResponse> search(User user, String month, Boolean status, String search) {
+        boolean hasStatus = status != null;
+        boolean statusValue = Boolean.TRUE.equals(status);
+        return paymentRepository.search(schoolOf(user), month, hasStatus, statusValue, search).stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
