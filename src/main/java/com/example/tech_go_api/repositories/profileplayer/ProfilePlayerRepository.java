@@ -30,4 +30,13 @@ public interface ProfilePlayerRepository extends JpaRepository<ProfilePlayer, St
 			@Param("search") String search,
 			@Param("turma") String turma,
 			Pageable pageable);
+
+	@Query("SELECT p FROM ProfilePlayer p WHERE p.school = :school "
+			+ "AND (:isDeleted IS NULL OR p.isDeleted = :isDeleted) "
+			+ "AND (:turma IS NULL OR :turma = '' OR LOWER(p.turma) LIKE LOWER(CONCAT('%', :turma, '%'))) "
+			+ "ORDER BY LOWER(p.firstname) ASC, LOWER(p.lastname) ASC")
+	List<ProfilePlayer> findForReport(
+			@Param("school") School school,
+			@Param("isDeleted") Boolean isDeleted,
+			@Param("turma") String turma);
 }

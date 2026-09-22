@@ -277,6 +277,63 @@ public class ProfilePlayerService {
 	 	 return saved;
 	 }
 
+	 public List<com.example.tech_go_api.dto.profileplayer.PlayerReportResponseDTO> generateReport(
+			 User user, String status, String turma, String aulaGrupoId) {
+		 ProfileAdmin profileAdmin = profileAdminRepository.findById(user.getId())
+		 			.orElseThrow(()-> new NotFoundException("Usuário Admin não encontrado"));
+		 School school = profileAdmin.getSchool();
+
+		 Boolean isDeleted;
+		 if ("ATIVOS".equalsIgnoreCase(status)) {
+			 isDeleted = false;
+		 } else if ("INATIVOS".equalsIgnoreCase(status)) {
+			 isDeleted = true;
+		 } else {
+			 isDeleted = null;
+		 }
+
+		 List<ProfilePlayer> players = profilePlayerRepository.findForReport(school, isDeleted, turma);
+
+		 if (aulaGrupoId != null && !aulaGrupoId.isBlank()) {
+			 AulaGrupo grupo = aulaGrupoRepository.findById(aulaGrupoId)
+					 .orElseThrow(() -> new NotFoundException("Grupo de aula não encontrado"));
+			 java.util.Set<String> allowedIds = grupo.getPlayers().stream()
+					 .map(ProfilePlayer::getId)
+					 .collect(java.util.stream.Collectors.toSet());
+			 players = players.stream().filter(p -> allowedIds.contains(p.getId())).collect(java.util.stream.Collectors.toList());
+		 }
+
+		 return players.stream().map(this::toReportResponse).collect(java.util.stream.Collectors.toList());
+	 }
+
+	 private com.example.tech_go_api.dto.profileplayer.PlayerReportResponseDTO toReportResponse(ProfilePlayer player) {
+		 String responsibleNames = responsibleRepository.findByPlayers_Id(player.getId()).stream()
+				 .map(Responsible::getName)
+				 .collect(java.util.stream.Collectors.joining(", "));
+
+		 String aulaGrupoName = aulaGrupoRepository.findByPlayers_Id(player.getId()).stream()
+				 .map(AulaGrupo::getName)
+				 .collect(java.util.stream.Collectors.joining(", "));
+
+		 return new com.example.tech_go_api.dto.profileplayer.PlayerReportResponseDTO(
+				 player.getId(),
+				 player.getFirstname(),
+				 player.getLastname(),
+				 player.getRegistrationId(),
+				 player.getTurma(),
+				 player.getBirthDate(),
+				 player.getRg(),
+				 player.getCpf(),
+				 player.getPhoneNumber(),
+				 player.getAddress(),
+				 player.getCollege(),
+				 player.getPaymentPlan(),
+				 responsibleNames.isEmpty() ? null : responsibleNames,
+				 aulaGrupoName.isEmpty() ? null : aulaGrupoName,
+				 Boolean.TRUE.equals(player.getIsDeleted())
+		 );
+	 }
+
 	 private String resolveTurma(String turmaFromDto, LocalDate birthDate) {
 		 if (turmaFromDto != null && !turmaFromDto.isBlank()) {
 			 return turmaFromDto;

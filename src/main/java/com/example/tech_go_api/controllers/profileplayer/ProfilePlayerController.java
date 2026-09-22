@@ -22,6 +22,7 @@ import org.springframework.data.web.PageableDefault;
 
 import com.example.tech_go_api.domain.profileplayer.ProfilePlayer;
 import com.example.tech_go_api.domain.users.base.User;
+import com.example.tech_go_api.dto.profileplayer.PlayerReportResponseDTO;
 import com.example.tech_go_api.dto.profileplayer.ProfilePlayerCreateRequestDTO;
 import com.example.tech_go_api.dto.profileplayer.ProfilePlayerSoftDeleteRequestDTO;
 import com.example.tech_go_api.services.profileplayer.ProfilePlayerService;
@@ -95,5 +96,14 @@ public class ProfilePlayerController {
 	                                     @RequestBody @Valid ProfilePlayerCreateRequestDTO dto) {
 		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		return profilePlayerService.updateProfilePlayer(id, dto, user);
+	}
+
+	@GetMapping(path = "/relatorio")
+	public ResponseEntity<List<PlayerReportResponseDTO>> generateReport(
+			@RequestParam(required = false, defaultValue = "ATIVOS") String status,
+			@RequestParam(required = false) String turma,
+			@RequestParam(required = false) String aulaGrupoId) {
+		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		return ResponseEntity.ok(profilePlayerService.generateReport(user, status, turma, aulaGrupoId));
 	}
 }
