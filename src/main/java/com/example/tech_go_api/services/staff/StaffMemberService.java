@@ -20,6 +20,7 @@ import com.example.tech_go_api.exceptions.ConflictException;
 import com.example.tech_go_api.exceptions.NotFoundException;
 import com.example.tech_go_api.repositories.profileadmin.ProfileAdminRepository;
 import com.example.tech_go_api.repositories.staff.StaffMemberRepository;
+import com.example.tech_go_api.repositories.token.RefreshTokenRepository;
 import com.example.tech_go_api.repositories.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ public class StaffMemberService {
     private final ProfileAdminRepository profileAdminRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     private School schoolOf(User user) {
         ProfileAdmin profileAdmin = profileAdminRepository.findById(user.getId())
@@ -100,6 +102,7 @@ public class StaffMemberService {
 
     public void delete(String id, User user) {
         StaffMember staff = findOwnedStaff(id, user);
+        refreshTokenRepository.deleteByUser(staff);
         staffMemberRepository.delete(staff);
     }
 
