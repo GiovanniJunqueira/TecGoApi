@@ -16,10 +16,14 @@ import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
+import com.example.tech_go_api.domain.staff.Permission;
+import com.example.tech_go_api.domain.staff.StaffMember;
 import com.example.tech_go_api.domain.token.RefreshToken;
+import com.example.tech_go_api.domain.users.Role;
 import com.example.tech_go_api.domain.users.base.User;
 import com.example.tech_go_api.exceptions.AuthException;
 import com.example.tech_go_api.exceptions.BusinessException;
+import com.example.tech_go_api.repositories.staff.StaffMemberRepository;
 import com.example.tech_go_api.repositories.token.RefreshTokenRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -33,14 +37,15 @@ public class TokenService {
 
     @Value("${jwt.access.token.duration.minutes}")
     private int accessTokenDurationMinutes;
-    
+
     @Value("${jwt.refresh.token.duration.days}")
     private int refreshTokenDurationDays;
-    
+
     private static final long MILLIS_IN_DAY = 24 * 60 * 60 * 1000L;
     private static final long SECONDS_IN_MINUTE = 60L;
 
     private final RefreshTokenRepository refreshTokenRepository;
+    private final StaffMemberRepository staffMemberRepository;
 
     public String generateToken(User user) {
         try {
@@ -49,13 +54,22 @@ public class TokenService {
             Instant now = Instant.now();
             Instant expiration = generateExpirationDate();
 
-            return JWT.create()
+            var builder = JWT.create()
                     .withIssuer("tech-go-api")
                     .withSubject(user.getId())
                     .withClaim("role", user.getRole().toString())
                     .withIssuedAt(Date.from(now))
-                    .withExpiresAt(expiration)
-                    .sign(algorithm);
+                    .withExpiresAt(expiration);
+
+            if (user.getRole() == Role.STAFF) {
+                String[] permissions = staffMemberRepository.findById(user.getId())
+                        .map(StaffMember::getPermissions)
+                        .map(perms -> perms.stream().map(Permission::toString).toArray(String[]::new))
+                        .orElse(new String[0]);
+                builder = builder.withArrayClaim("permissions", permissions);
+            }
+
+            return builder.sign(algorithm);
 
         } catch (JWTCreationException exception) {
                         throw new BusinessException("Erro na autenticação");

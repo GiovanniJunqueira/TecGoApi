@@ -4,4 +4,5 @@ public enum Role {
     MASTER,   // Devs - acesso por Postman
     ADMIN,    // Escola - acesso pelo Painel
     PLAYER,   // Alunos - acesso futuro
+    STAFF,    // Profissionais da escola - acesso restrito por permissão
 }

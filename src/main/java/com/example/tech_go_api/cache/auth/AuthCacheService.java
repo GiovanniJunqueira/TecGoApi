@@ -4,6 +4,7 @@ import com.example.tech_go_api.domain.users.Role;
 import com.example.tech_go_api.domain.users.base.User;
 import com.example.tech_go_api.exceptions.NotFoundException;
 import com.example.tech_go_api.repositories.profileadmin.ProfileAdminRepository;
+import com.example.tech_go_api.repositories.staff.StaffMemberRepository;
 import com.example.tech_go_api.repositories.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ public class AuthCacheService {
 
     private final UserRepository repository;
     private final ProfileAdminRepository profileAdminRepository;
+    private final StaffMemberRepository staffMemberRepository;
 
     @Cacheable(cacheNames = "meCache", key = "#userId")
     public Object getMe(String userId) {
@@ -31,6 +33,11 @@ public class AuthCacheService {
         if (user.getRole() == Role.ADMIN) {
             return profileAdminRepository.findById(userId)
                     .orElseThrow(() -> new NotFoundException("Perfil de administrador não encontrado para o usuário: " + userId));
+        }
+
+        if (user.getRole() == Role.STAFF) {
+            return staffMemberRepository.findById(userId)
+                    .orElseThrow(() -> new NotFoundException("Perfil de profissional não encontrado para o usuário: " + userId));
         }
 
         return user;
