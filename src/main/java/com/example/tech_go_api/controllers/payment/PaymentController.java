@@ -41,10 +41,16 @@ public class PaymentController {
         return ResponseEntity.ok(paymentService.markAsPaid(id, method, paidAt, currentUser()));
     }
 
-    // Editar um pagamento já quitado (data em que pagou e/ou valor)
+    // Editar um pagamento já quitado (data em que pagou, valor e/ou forma de pagamento)
     @PutMapping("/{id}/edit")
     public ResponseEntity<PaymentResponse> editPayment(@PathVariable String id, @RequestBody EditPaymentRequestDTO body) {
-        return ResponseEntity.ok(paymentService.editPayment(id, body.paidAt(), body.amount(), currentUser()));
+        return ResponseEntity.ok(paymentService.editPayment(id, body.paidAt(), body.amount(), body.paymentMethod(), currentUser()));
+    }
+
+    // Reverter um pagamento já quitado de volta para pendente
+    @PutMapping("/{id}/unpay")
+    public ResponseEntity<PaymentResponse> markAsPending(@PathVariable String id) {
+        return ResponseEntity.ok(paymentService.markAsPending(id, currentUser()));
     }
 
     // Buscar pagamentos da escola, com filtros opcionais de mês, status (pendentes) e busca por aluno/responsável

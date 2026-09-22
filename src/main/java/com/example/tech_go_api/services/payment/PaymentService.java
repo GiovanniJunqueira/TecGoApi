@@ -84,8 +84,8 @@ public class PaymentService {
         return toResponse(paymentRepository.save(payment));
     }
 
-    // Editar um pagamento já quitado (data em que pagou e/ou valor)
-    public PaymentResponse editPayment(String paymentId, LocalDate paidAt, java.math.BigDecimal amount, User user) {
+    // Editar um pagamento já quitado (data em que pagou, valor e/ou forma de pagamento)
+    public PaymentResponse editPayment(String paymentId, LocalDate paidAt, java.math.BigDecimal amount, PaymentMethod paymentMethod, User user) {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new NotFoundException("Pagamento não encontrado"));
 
@@ -107,6 +107,27 @@ public class PaymentService {
         if (amount != null) {
             payment.setAmount(amount);
         }
+
+        if (paymentMethod != null) {
+            payment.setPaymentMethod(paymentMethod);
+        }
+
+        return toResponse(paymentRepository.save(payment));
+    }
+
+    // Reverter um pagamento já quitado de volta para pendente
+    public PaymentResponse markAsPending(String paymentId, User user) {
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new NotFoundException("Pagamento não encontrado"));
+
+        if (!payment.getProfilePlayer().getSchool().getId().equals(schoolOf(user).getId())) {
+            throw new IllegalArgumentException("Este pagamento não pertence à sua escola.");
+        }
+
+        payment.setStatus(false);
+        payment.setPaidAt(null);
+        payment.setPaymentMethod(null);
+        payment.setAmount(null);
 
         return toResponse(paymentRepository.save(payment));
     }
