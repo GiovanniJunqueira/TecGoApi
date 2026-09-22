@@ -1,5 +1,8 @@
 package com.example.tech_go_api.cache.auth;
 
+import java.util.HashSet;
+
+import com.example.tech_go_api.domain.staff.StaffMember;
 import com.example.tech_go_api.domain.users.Role;
 import com.example.tech_go_api.domain.users.base.User;
 import com.example.tech_go_api.exceptions.NotFoundException;
@@ -36,8 +39,14 @@ public class AuthCacheService {
         }
 
         if (user.getRole() == Role.STAFF) {
-            return staffMemberRepository.findById(userId)
+            StaffMember staff = staffMemberRepository.findById(userId)
                     .orElseThrow(() -> new NotFoundException("Perfil de profissional não encontrado para o usuário: " + userId));
+            // Materializa a coleção de permissões num HashSet comum antes de cachear/serializar:
+            // como Set<Permission> vem de um PersistentSet do Hibernate, serializar para o Redis
+            // (ou para o JSON de resposta) fora da sessão original falha com
+            // "failed to lazily initialize a collection - no Session".
+            staff.setPermissions(new HashSet<>(staff.getPermissions()));
+            return staff;
         }
 
         return user;
