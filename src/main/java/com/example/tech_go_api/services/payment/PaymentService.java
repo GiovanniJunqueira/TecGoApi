@@ -19,6 +19,8 @@ import com.example.tech_go_api.services.staff.PermissionService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -51,10 +53,26 @@ public class PaymentService {
     public Payment createPayment(ProfilePlayer player, String month) {
         Payment payment = new Payment();
         payment.setProfilePlayer(player);
-        payment.setMonth(month);
+        payment.setMonth(normalizeMonth(month));
         payment.setStatus(false); // inicialmente não pago
         payment.setPaidAt(null);
         return paymentRepository.save(payment);
+    }
+
+    // "2026-9" e "2026-09" são o mesmo mês, mas como o filtro de mês compara a string
+    // exata, um valor sem zero à esquerda nunca bate com o "2026-09" usado em toda
+    // busca/agregação (Dashboard, Financeiro, filtro por mês) - por isso todo mês é
+    // normalizado antes de ser salvo, não importa de onde ele veio.
+    private String normalizeMonth(String month) {
+        if (month == null || month.isBlank()) {
+            return month;
+        }
+        try {
+            YearMonth yearMonth = YearMonth.parse(month, DateTimeFormatter.ofPattern("yyyy-M"));
+            return String.format("%d-%02d", yearMonth.getYear(), yearMonth.getMonthValue());
+        } catch (Exception e) {
+            return month;
+        }
     }
 
     // Criar pagamento a partir do ID do aluno, validando que ele pertence à escola do admin logado
@@ -143,7 +161,7 @@ public class PaymentService {
         permissionService.requirePermission(user, Permission.PAGAMENTOS_VER);
         boolean hasStatus = status != null;
         boolean statusValue = Boolean.TRUE.equals(status);
-        return paymentRepository.search(schoolOf(user), month, hasStatus, statusValue, search).stream()
+        return paymentRepository.search(schoolOf(user), normalizeMonth(month), hasStatus, statusValue, search).stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
