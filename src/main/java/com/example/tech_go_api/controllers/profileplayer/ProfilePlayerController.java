@@ -25,6 +25,7 @@ import com.example.tech_go_api.domain.users.base.User;
 import com.example.tech_go_api.dto.profileplayer.PlayerReportResponseDTO;
 import com.example.tech_go_api.dto.profileplayer.ProfilePlayerCreateRequestDTO;
 import com.example.tech_go_api.dto.profileplayer.ProfilePlayerSoftDeleteRequestDTO;
+import com.example.tech_go_api.dto.profileplayer.UpdatePaymentPlanRequestDTO;
 import com.example.tech_go_api.services.profileplayer.ProfilePlayerService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -96,6 +97,12 @@ public class ProfilePlayerController {
 	                                     @RequestBody @Valid ProfilePlayerCreateRequestDTO dto) {
 		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		return profilePlayerService.updateProfilePlayer(id, dto, user);
+	}
+
+	@PutMapping(path = "/{id}/plano-pagamento")
+	public ProfilePlayer updatePaymentPlan(@PathVariable String id, @RequestBody UpdatePaymentPlanRequestDTO dto) {
+		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		return profilePlayerService.updatePaymentPlan(id, dto.paymentPlanId(), user);
 	}
 
 	@GetMapping(path = "/relatorio")

@@ -14,6 +14,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 
 import com.example.tech_go_api.domain.aula.AulaGrupo;
+import com.example.tech_go_api.domain.paymentplan.PaymentPlan;
 import com.example.tech_go_api.domain.profileplayer.ProfilePlayer;
 import com.example.tech_go_api.domain.responsible.Responsible;
 import com.example.tech_go_api.domain.school.School;
@@ -32,6 +33,7 @@ import com.example.tech_go_api.repositories.profileplayer.ProfilePlayerRepositor
 import com.example.tech_go_api.repositories.responsible.ResponsibleRepository;
 import com.example.tech_go_api.repositories.school.SchoolRepository;
 import com.example.tech_go_api.services.payment.PaymentService;
+import com.example.tech_go_api.services.paymentplan.PaymentPlanService;
 import com.example.tech_go_api.services.school.SchoolResolverService;
 import com.example.tech_go_api.services.staff.PermissionService;
 
@@ -54,6 +56,7 @@ public class ProfilePlayerService {
 	private final AulaPresencaRepository aulaPresencaRepository;
 	private final SchoolResolverService schoolResolverService;
 	private final PermissionService permissionService;
+	private final PaymentPlanService paymentPlanService;
 
 	@Autowired
 	PaymentService paymentService;
@@ -87,7 +90,7 @@ public class ProfilePlayerService {
 	        profilePlayer.setOrigin(dto.origin());
 	        profilePlayer.setRegistrationId(dto.registrationId());
 	        profilePlayer.setTurma(resolveTurma(dto.turma(), dto.birthDate()));
-	        profilePlayer.setPaymentPlan(dto.paymentPlan());
+	        profilePlayer.setPaymentPlan(resolvePaymentPlan(dto.paymentPlanId(), user));
 	        profilePlayer.setIsDeleted(false);
 
 	        ProfilePlayer saved = profilePlayerRepository.save(profilePlayer);
@@ -258,7 +261,7 @@ public class ProfilePlayerService {
 	 	 profilePlayer.setOrigin(dto.origin());
 	 	 profilePlayer.setRegistrationId(dto.registrationId());
 	 	 profilePlayer.setTurma(resolveTurma(dto.turma(), dto.birthDate()));
-	 	 profilePlayer.setPaymentPlan(dto.paymentPlan());
+	 	 profilePlayer.setPaymentPlan(resolvePaymentPlan(dto.paymentPlanId(), user));
 
 	 	 ProfilePlayer saved = profilePlayerRepository.save(profilePlayer);
 
@@ -316,11 +319,33 @@ public class ProfilePlayerService {
 				 player.getPhoneNumber(),
 				 player.getAddress(),
 				 player.getCollege(),
-				 player.getPaymentPlan(),
+				 player.getPaymentPlan() != null ? player.getPaymentPlan().getName() : null,
 				 responsibleNames.isEmpty() ? null : responsibleNames,
 				 aulaGrupoName.isEmpty() ? null : aulaGrupoName,
 				 Boolean.TRUE.equals(player.getIsDeleted())
 		 );
+	 }
+
+	 public ProfilePlayer updatePaymentPlan(String id, String paymentPlanId, User user) {
+	 	 permissionService.requirePermission(user, Permission.ATLETAS_EDITAR);
+	 	 School school = schoolResolverService.schoolOf(user);
+
+	 	 ProfilePlayer profilePlayer = profilePlayerRepository.findById(id)
+	 	     	.orElseThrow(() -> new NotFoundException("Aluno não encontrado"));
+
+	 	 if (!profilePlayer.getSchool().getId().equals(school.getId())) {
+	 	     throw new IllegalArgumentException("Este aluno não pertence à sua escola.");
+	 	 }
+
+	 	 profilePlayer.setPaymentPlan(resolvePaymentPlan(paymentPlanId, user));
+	 	 return profilePlayerRepository.save(profilePlayer);
+	 }
+
+	 private PaymentPlan resolvePaymentPlan(String paymentPlanId, User user) {
+		 if (paymentPlanId == null || paymentPlanId.isBlank()) {
+			 return null;
+		 }
+		 return paymentPlanService.findOwnedPlan(paymentPlanId, user);
 	 }
 
 	 private String resolveTurma(String turmaFromDto, LocalDate birthDate) {

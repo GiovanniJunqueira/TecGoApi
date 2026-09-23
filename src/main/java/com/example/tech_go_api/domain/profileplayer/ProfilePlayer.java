@@ -2,14 +2,13 @@ package com.example.tech_go_api.domain.profileplayer;
 
 import java.time.LocalDate;
 
+import com.example.tech_go_api.domain.paymentplan.PaymentPlan;
 import com.example.tech_go_api.domain.school.School;
 import com.example.tech_go_api.domain.users.base.User;
 import com.example.tech_go_api.domain.users.profileadmin.ProfileAdmin;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrimaryKeyJoinColumn;
@@ -55,7 +54,8 @@ public class ProfilePlayer extends User {
 	private LocalDate inactiveSince;
 	private String turma;
 
-	@Enumerated(EnumType.STRING)
+	@ManyToOne
+	@JoinColumn(name = "payment_plan_id", nullable = true)
 	private PaymentPlan paymentPlan;
 
 	@ManyToOne
