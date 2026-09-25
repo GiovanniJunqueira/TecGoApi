@@ -8,6 +8,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
+import com.example.tech_go_api.domain.game.GameCategory;
 import com.example.tech_go_api.domain.staff.Permission;
 import com.example.tech_go_api.domain.users.Role;
 
@@ -34,6 +35,7 @@ public class SchemaConstraintFixer implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         syncEnumConstraint("t_user", "role", "t_user_role_check", Role.values());
         syncEnumConstraint("t_staff_permission", "permission", "t_staff_permission_permission_check", Permission.values());
+        syncEnumConstraint("t_game", "category", "t_game_category_check", GameCategory.values());
     }
 
     private void syncEnumConstraint(String table, String column, String constraintName, Enum<?>[] values) {
