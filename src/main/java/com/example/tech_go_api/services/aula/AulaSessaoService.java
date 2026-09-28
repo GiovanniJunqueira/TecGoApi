@@ -60,6 +60,13 @@ public class AulaSessaoService {
         return toResponse(aulaSessaoRepository.save(sessao));
     }
 
+    public List<AulaSessaoResponseDTO> findAll(String grupoId, LocalDate startDate, LocalDate endDate, User user) {
+        permissionService.requirePermission(user, Permission.AULAS_VER_GRUPOS);
+        return aulaSessaoRepository.search(schoolOf(user), grupoId, startDate, endDate).stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
     public List<AulaSessaoResponseDTO> findByGrupo(String grupoId, User user) {
         permissionService.requirePermission(user, Permission.AULAS_VER_GRUPOS);
         AulaGrupo grupo = findOwnedGrupo(grupoId, user);
