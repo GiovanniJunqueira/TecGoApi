@@ -17,8 +17,8 @@ public interface GameRepository extends JpaRepository<Game, String> {
     @Query("SELECT g FROM Game g WHERE g.school = :school "
             + "AND (:type IS NULL OR g.type = :type) "
             + "AND (:category IS NULL OR g.category = :category) "
-            + "AND (:startDate IS NULL OR g.date >= :startDate) "
-            + "AND (:endDate IS NULL OR g.date <= :endDate)")
+            + "AND g.date >= COALESCE(:startDate, g.date) "
+            + "AND g.date <= COALESCE(:endDate, g.date)")
     List<Game> search(
             @Param("school") School school,
             @Param("type") GameType type,

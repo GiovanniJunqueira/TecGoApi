@@ -17,8 +17,8 @@ public interface AulaSessaoRepository extends JpaRepository<AulaSessao, String> 
 
     @Query("SELECT s FROM AulaSessao s WHERE s.grupo.school = :school "
             + "AND (:grupoId IS NULL OR s.grupo.id = :grupoId) "
-            + "AND (:startDate IS NULL OR s.date >= :startDate) "
-            + "AND (:endDate IS NULL OR s.date <= :endDate) "
+            + "AND s.date >= COALESCE(:startDate, s.date) "
+            + "AND s.date <= COALESCE(:endDate, s.date) "
             + "ORDER BY s.date DESC")
     List<AulaSessao> search(
             @Param("school") School school,
