@@ -85,7 +85,7 @@ public class GameService {
         game.setLocation(request.location());
 
         Map<String, Boolean> attendedByPlayerId = game.getPlayers().stream()
-                .filter(s -> s.getPlayer() != null)
+                .filter(s -> s.getPlayer() != null && s.getAttended() != null)
                 .collect(Collectors.toMap(s -> s.getPlayer().getId(), GamePlayerStats::getAttended, (a, b) -> a));
 
         game.getPlayers().clear();
