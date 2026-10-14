@@ -14,6 +14,7 @@ import com.example.tech_go_api.domain.users.base.User;
 import com.example.tech_go_api.dto.financeiro.FinanceiroSummaryResponse;
 import com.example.tech_go_api.dto.product.SaleResponseDTO;
 import com.example.tech_go_api.repositories.payment.PaymentRepository;
+import com.example.tech_go_api.services.ledger.LedgerService;
 import com.example.tech_go_api.services.payment.PaymentPricingService;
 import com.example.tech_go_api.services.product.SaleService;
 import com.example.tech_go_api.services.school.SchoolResolverService;
@@ -30,6 +31,7 @@ public class FinanceiroService {
     private final SaleService saleService;
     private final SchoolResolverService schoolResolverService;
     private final PaymentPricingService paymentPricingService;
+    private final LedgerService ledgerService;
 
     public FinanceiroSummaryResponse getSummary(User user, String month) {
         School school = schoolResolverService.schoolOf(user);
@@ -53,14 +55,24 @@ public class FinanceiroService {
                 .map(SaleResponseDTO::totalAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+        LedgerService.MonthTotals ledger = ledgerService.monthTotals(school, yearMonth);
+        BigDecimal receitaTotalMes = mensalidadesRecebidas.add(vendasTotal);
+        BigDecimal totalEntradasMes = receitaTotalMes.add(ledger.totalEntradas());
+
         return new FinanceiroSummaryResponse(
                 mensalidadesRecebidas,
                 pendingPayments.size(),
                 mensalidadesPendentesEstimativa,
                 vendasTotal,
                 sales.size(),
-                mensalidadesRecebidas.add(vendasTotal),
-                sales.stream().limit(VENDAS_RECENTES_LIMIT).toList()
+                receitaTotalMes,
+                sales.stream().limit(VENDAS_RECENTES_LIMIT).toList(),
+                ledger.totalEntradas(),
+                ledger.entradas(),
+                ledger.totalSaidas(),
+                ledger.saidas(),
+                totalEntradasMes,
+                totalEntradasMes.subtract(ledger.totalSaidas())
         );
     }
 

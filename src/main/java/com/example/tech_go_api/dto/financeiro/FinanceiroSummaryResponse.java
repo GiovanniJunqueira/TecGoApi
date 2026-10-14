@@ -3,6 +3,7 @@ package com.example.tech_go_api.dto.financeiro;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.example.tech_go_api.dto.ledger.LedgerCategoryTotalDTO;
 import com.example.tech_go_api.dto.product.SaleResponseDTO;
 
 public record FinanceiroSummaryResponse(
@@ -12,5 +13,11 @@ public record FinanceiroSummaryResponse(
         BigDecimal vendasTotal,
         long vendasQtd,
         BigDecimal receitaTotalMes,
-        List<SaleResponseDTO> vendasRecentes
+        List<SaleResponseDTO> vendasRecentes,
+        BigDecimal outrasEntradasTotal,
+        List<LedgerCategoryTotalDTO> entradasPorCategoria,
+        BigDecimal saidasTotal,
+        List<LedgerCategoryTotalDTO> saidasPorCategoria,
+        BigDecimal totalEntradasMes,
+        BigDecimal saldoMes
 ) {}
