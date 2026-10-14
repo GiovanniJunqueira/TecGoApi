@@ -21,6 +21,11 @@ import com.example.tech_go_api.dto.product.ProductCreateRequestDTO;
 import com.example.tech_go_api.dto.product.ProductResponseDTO;
 import com.example.tech_go_api.dto.product.ProductUpdateRequestDTO;
 import com.example.tech_go_api.services.product.ProductService;
+import com.example.tech_go_api.services.product.StockService;
+import com.example.tech_go_api.dto.product.StockAdjustRequestDTO;
+import com.example.tech_go_api.dto.product.StockEntryRequestDTO;
+import com.example.tech_go_api.dto.product.StockMovementResponseDTO;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -33,6 +38,7 @@ import lombok.RequiredArgsConstructor;
 public class ProductController {
 
     private final ProductService productService;
+    private final StockService stockService;
 
     private User currentUser() {
         return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -77,5 +83,22 @@ public class ProductController {
     public ResponseEntity<Void> reactivate(@PathVariable String id) {
         productService.reactivate(id, currentUser());
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/estoque/entrada")
+    public ResponseEntity<ProductResponseDTO> registerStockEntry(@PathVariable String id, @RequestBody @Valid StockEntryRequestDTO dto) {
+        stockService.registerEntry(id, dto, currentUser());
+        return ResponseEntity.ok(productService.findById(id, currentUser()));
+    }
+
+    @PostMapping("/{id}/estoque/ajuste")
+    public ResponseEntity<ProductResponseDTO> adjustStock(@PathVariable String id, @RequestBody @Valid StockAdjustRequestDTO dto) {
+        stockService.adjust(id, dto, currentUser());
+        return ResponseEntity.ok(productService.findById(id, currentUser()));
+    }
+
+    @GetMapping("/{id}/estoque/movimentos")
+    public ResponseEntity<List<StockMovementResponseDTO>> findStockMovements(@PathVariable String id) {
+        return ResponseEntity.ok(stockService.findMovements(id, currentUser()));
     }
 }

@@ -32,6 +32,7 @@ public class ProductService {
     private final SchoolResolverService schoolResolverService;
     private final PermissionService permissionService;
     private final MinioService minioService;
+    private final StockService stockService;
 
     public ProductResponseDTO create(ProductCreateRequestDTO dto, User user) {
         permissionService.requirePermission(user, Permission.PRODUTOS_CRIAR);
@@ -45,7 +46,12 @@ public class ProductService {
         product.setActive(true);
         uploadPhotoIfPresent(dto.getPhotoFile(), product);
 
-        return toResponse(productRepository.save(product));
+        Product saved = productRepository.save(product);
+        if (dto.getInitialStock() != null && dto.getInitialStock() > 0) {
+            stockService.recordInitialStock(saved, dto.getInitialStock());
+        }
+
+        return toResponse(saved);
     }
 
     public ProductResponseDTO update(String id, ProductUpdateRequestDTO dto, User user) {
@@ -125,7 +131,8 @@ public class ProductService {
                 product.getDescription(),
                 product.getPrice(),
                 photoUrl,
-                product.isActive()
+                product.isActive(),
+                product.getStock()
         );
     }
 }

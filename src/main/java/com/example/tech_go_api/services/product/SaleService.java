@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.tech_go_api.domain.product.Product;
 import com.example.tech_go_api.domain.product.Sale;
@@ -31,9 +32,11 @@ public class SaleService {
     private final SaleRepository saleRepository;
     private final ProfilePlayerRepository profilePlayerRepository;
     private final ProductService productService;
+    private final StockService stockService;
     private final SchoolResolverService schoolResolverService;
     private final PermissionService permissionService;
 
+    @Transactional
     public SaleResponseDTO create(SaleCreateRequestDTO dto, User user) {
         permissionService.requirePermission(user, Permission.PRODUTOS_VENDER);
         School school = schoolResolverService.schoolOf(user);
@@ -45,6 +48,7 @@ public class SaleService {
         }
 
         Product product = productService.findOwnedProduct(dto.productId(), user);
+        stockService.assertAvailable(product, dto.quantity());
 
         Sale sale = new Sale();
         sale.setSchool(school);
@@ -66,7 +70,9 @@ public class SaleService {
             sale.setBuyerName(dto.buyerName());
         }
 
-        return toResponse(saleRepository.save(sale));
+        Sale saved = saleRepository.save(sale);
+        stockService.recordSale(product, dto.quantity(), saved.getId());
+        return toResponse(saved);
     }
 
     public List<SaleResponseDTO> findAll(User user, String month) {
@@ -81,6 +87,7 @@ public class SaleService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public void delete(String id, User user) {
         permissionService.requirePermission(user, Permission.PRODUTOS_EXCLUIR_VENDA);
         School school = schoolResolverService.schoolOf(user);
@@ -92,6 +99,7 @@ public class SaleService {
             throw new IllegalArgumentException("Esta venda não pertence à sua escola.");
         }
 
+        stockService.restoreSale(sale.getProduct(), sale.getQuantity(), sale.getId());
         saleRepository.delete(sale);
     }
 

@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import com.example.tech_go_api.domain.school.School;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -37,6 +38,9 @@ public class Product implements Serializable {
     private BigDecimal price;
     private String photoReferenceId;
     private boolean active;
+
+    @Column(columnDefinition = "integer default 0 not null")
+    private int stock;
 
     @ManyToOne
     @JoinColumn(name = "school_id")
