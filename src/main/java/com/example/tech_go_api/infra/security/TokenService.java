@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -110,14 +111,13 @@ public class TokenService {
         return refreshTokenRepository.findByToken(token);
     }
 
+    @Transactional
     public RefreshToken createRefreshToken(User user) {
-        RefreshToken refreshToken = refreshTokenRepository.findByUser(user)
-                .orElseGet(() -> {
-                    RefreshToken newToken = new RefreshToken();
-                    newToken.setUser(user);
-                    return newToken;
-                });
+        // Um token por login (aparelho): entrar em outro aparelho não pode derrubar a sessão dos demais.
+        refreshTokenRepository.deleteByUserAndExpiryDateBefore(user, Instant.now());
 
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setUser(user);
         refreshToken.setExpiryDate(Instant.now().plusMillis(getRefreshTokenDurationMs()));
 
         refreshToken.setToken(UUID.randomUUID().toString());

@@ -41,11 +41,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/payment-plans/**").hasAnyRole("ADMIN", "MASTER")
                         .requestMatchers("/player/**").hasAnyRole("ADMIN", "STAFF")
                         .requestMatchers(HttpMethod.POST, "/school/**").hasRole("MASTER")
-                        .requestMatchers(HttpMethod.GET, "/school/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/school/**").hasAnyRole("ADMIN", "STAFF")
                         .requestMatchers(HttpMethod.PUT, "/school/**").hasRole("ADMIN")
 
                         .requestMatchers(
                                 "/",
+                        "/error",
                         "/actuator/health",
                         "/v3/api-docs/**",
                         "/swagger-ui/**",
@@ -58,6 +59,10 @@ public class SecurityConfig {
                 .exceptionHandling(handling -> handling
                         .authenticationEntryPoint((request, response, authException) ->
                                 response.sendError(HttpStatus.UNAUTHORIZED.value()))
+                        // Sem permissão precisa ser 403: o painel trata 401 como sessão expirada e
+                        // tenta renovar o token, o que derrubava a sessão de profissionais.
+                        .accessDeniedHandler((request, response, accessDeniedException) ->
+                                response.sendError(HttpStatus.FORBIDDEN.value()))
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

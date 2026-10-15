@@ -54,9 +54,9 @@ public class AuthController {
     }
 
     @DeleteMapping("/logout")
-    public ResponseEntity<Void> logout() {
+    public ResponseEntity<Void> logout(@RequestBody(required = false) TokenRefreshRequestDTO body) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        authService.logout(user);
+        authService.logout(user, body != null ? body.getRefreshToken() : null);
         return ResponseEntity.noContent().build();
     }
 

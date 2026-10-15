@@ -43,13 +43,14 @@ public class StaffMemberService {
     }
 
     public StaffResponseDTO create(StaffCreateRequestDTO dto, User user) {
-        userRepository.findByEmail(dto.email()).ifPresent(existing -> {
+        String email = dto.email().trim().toLowerCase();
+        userRepository.findByEmailIgnoreCase(email).ifPresent(existing -> {
             throw new ConflictException("Já existe um usuário com este e-mail");
         });
 
         StaffMember staff = new StaffMember();
         staff.setRole(Role.STAFF);
-        staff.setEmail(dto.email());
+        staff.setEmail(email);
         staff.setPassword(passwordEncoder.encode(dto.password()));
         staff.setFirstname(dto.firstname());
         staff.setLastname(dto.lastname());

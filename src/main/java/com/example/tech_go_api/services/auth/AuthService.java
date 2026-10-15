@@ -32,7 +32,7 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
 
     public ResponseEntity<LoginResponseDTO> login(LoginRequestDTO body) {
-        User user = repository.findByEmail(body.email())
+        User user = repository.findByEmailIgnoreCase(body.email().trim())
                 .orElseThrow(() -> new NotFoundException("Usuário com o e-mail informado não foi encontrado"));
 
         if (!passwordEncoder.matches(body.password(), user.getPassword())) {
@@ -86,8 +86,14 @@ public class AuthService {
     }
 
     @Transactional
-    public void logout(User user) {
-        refreshTokenRepository.findByUser(user).ifPresent(refreshTokenRepository::delete);
+    public void logout(User user, String refreshToken) {
+        if (refreshToken == null || refreshToken.isBlank()) {
+            refreshTokenRepository.deleteByUser(user);
+            return;
+        }
+        refreshTokenRepository.findByToken(refreshToken)
+                .filter(token -> token.getUser().getId().equals(user.getId()))
+                .ifPresent(refreshTokenRepository::delete);
     }
 
 }

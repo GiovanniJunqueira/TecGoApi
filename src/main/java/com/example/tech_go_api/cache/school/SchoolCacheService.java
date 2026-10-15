@@ -1,5 +1,7 @@
 package com.example.tech_go_api.cache.school;
 
+import com.example.tech_go_api.services.school.SchoolResolverService;
+
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional(readOnly = true)
 public class SchoolCacheService {
     private final MinioService  minioService;
+    private final SchoolResolverService schoolResolverService;
 
 
     
@@ -29,17 +32,11 @@ public class SchoolCacheService {
     public SchoolResponseDTO findByUser(User user) {
         log.debug("Cache miss - Buscando escola para o usuário: {}", user.getId());
         
-        if (!(user instanceof ProfileAdmin)) {
-            throw new NotFoundException("Usuário não é um administrador de escola");
-        }
-        
-        ProfileAdmin admin = (ProfileAdmin) user;
-        School school = admin.getSchool();
-        
+        School school = schoolResolverService.schoolOf(user);
         if (school == null) {
-            throw new NotFoundException("Administrador não está associado a nenhuma escola");
+            throw new NotFoundException("Usuário não está associado a nenhuma escola");
         }
-        
+
         return this.toResponseDTO(school);
     }
     
